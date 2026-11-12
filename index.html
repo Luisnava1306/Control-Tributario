@@ -6,20 +6,40 @@
     <title>Legal y Contable, A.C. - Control Tributario</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans p-4">
-    <div class="max-w-4xl mx-auto space-y-6">
+<body class="bg-slate-900 text-slate-100 font-sans p-4 min-h-screen flex flex-col justify-center items-center">
+
+    <!-- PANTALLA DE LOGIN / PIN -->
+    <div id="auth-screen" class="w-full max-w-sm bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl space-y-4">
+        <div class="text-center space-y-1">
+            <h1 class="text-lg font-bold text-emerald-400">Legal y Contable, A.C.</h1>
+            <p class="text-xs text-slate-400">Ingrese su PIN de Acceso</p>
+        </div>
+        <form onsubmit="verifyPin(event)" class="space-y-3">
+            <div>
+                <input type="password" id="access-pin" required placeholder="••••" maxlength="6" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-center text-xl tracking-widest text-slate-100 font-mono focus:outline-none focus:border-emerald-500" />
+            </div>
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl transition shadow text-sm">Entrar al Sistema</button>
+        </form>
+        <p id="pin-error" class="text-xs text-rose-400 text-center hidden">PIN incorrecto. Intente nuevamente.</p>
+    </div>
+
+    <!-- APLICACIÓN PRINCIPAL (OCULTA HASTA INGRESAR EL PIN) -->
+    <div id="main-app" class="hidden w-full max-w-4xl space-y-6 my-auto">
         <!-- HEADER -->
         <header class="bg-slate-800 border border-slate-700 p-5 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-xl font-bold text-emerald-400">Legal y Contable, A.C.</h1>
                 <p class="text-xs text-slate-400">Control Tributario y Parafiscal (Sincronizado en la Nube)</p>
             </div>
-            <nav class="flex gap-2 flex-wrap">
-                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow">Panel / Registro</button>
-                <button onclick="switchTab('groups')" id="btn-groups" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Grupos</button>
-                <button onclick="switchTab('directory')" id="btn-directory" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Clientes</button>
-                <button onclick="switchTab('consult')" id="btn-consult" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Consultas y Recibos</button>
-            </nav>
+            <div class="flex items-center gap-3">
+                <nav class="flex gap-2 flex-wrap">
+                    <button onclick="switchTab('dashboard')" id="btn-dashboard" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow">Panel / Registro</button>
+                    <button onclick="switchTab('groups')" id="btn-groups" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Grupos</button>
+                    <button onclick="switchTab('directory')" id="btn-directory" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Clientes</button>
+                    <button onclick="switchTab('consult')" id="btn-consult" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Consultas y Recibos</button>
+                </nav>
+                <button onclick="lockSystem()" title="Bloquear sistema" class="bg-slate-700 hover:bg-rose-950 hover:text-rose-400 text-slate-300 p-2.5 rounded-xl transition">🔒</button>
+            </div>
         </header>
 
         <!-- TOTAL PENDIENTE GLOBAL -->
@@ -168,8 +188,11 @@
         </main>
     </div>
 
-    <!-- SCRIPT LÓGICO CON FIREBASE -->
+    <!-- SCRIPT LÓGICO Y AUTENTICACIÓN -->
     <script>
+        // CONFIGURA AQUÍ TU PIN SECRETO (Puedes cambiarlo cuando gustes)
+        const PIN_SECRETO = "1306"; 
+
         const FIREBASE_URL = "https://control-tributario-e5840-default-rtdb.firebaseio.com";
 
         const taxCatalog = {
@@ -199,7 +222,6 @@
             ]
         };
 
-        // Datos iniciales en memoria (respaldo local)
         let groups = JSON.parse(localStorage.getItem('lc_groups_native')) || [
             { id: 1, name: 'Grupo Empresarial Zulia' },
             { id: 2, name: 'Consorcio Comercial' }
@@ -215,7 +237,33 @@
             { id: 2, clientName: 'Comercial El Carmen, C.A.', rif: 'J-12345678-9', group: 'Grupo Empresarial Zulia', category: 'Impuestos Nacionales (SENIAT)', taxType: 'IVA - Impuesto al Valor Agregado', period: 'Diciembre 2026', dueDate: '2026-12-18', amountStr: '1.985,36', status: 'Pendiente' }
         ];
 
-        // Sincronización con Firebase al cargar
+        // Lógica de Autenticación por PIN
+        function verifyPin(e) {
+            e.preventDefault();
+            const inputPin = document.getElementById('access-pin').value;
+            const errorMsg = document.getElementById('pin-error');
+
+            if (inputPin === PIN_SECRETO) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.body.classList.remove('justify-center', 'items-center', 'min-h-screen');
+                document.getElementById('main-app').classList.remove('hidden');
+                updateTaxOptions();
+                loadFromFirebase();
+            } else {
+                errorMsg.classList.remove('hidden');
+                document.getElementById('access-pin').value = '';
+            }
+        }
+
+        function lockSystem() {
+            document.getElementById('main-app').classList.add('hidden');
+            document.body.classList.add('justify-center', 'items-center', 'min-h-screen');
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('access-pin').value = '';
+            document.getElementById('pin-error').classList.add('hidden');
+        }
+
+        // Sincronización con Firebase
         async function loadFromFirebase() {
             try {
                 const res = await fetch(`${FIREBASE_URL}/data.json`);
@@ -231,13 +279,12 @@
                 renderAll();
                 document.getElementById('sync-status').innerHTML = "☁️ Sincronizado con Firebase";
             } catch (err) {
-                console.warn("Modo offline o error al conectar con Firebase, usando respaldo local.", err);
+                console.warn("Modo offline o error al conectar con Firebase.", err);
                 document.getElementById('sync-status').innerHTML = "⚡ Modo Local (Offline)";
                 renderAll();
             }
         }
 
-        // Guardar cambios en LocalStorage y Firebase de forma asíncrona
         async function saveData() {
             saveToLocalStorage();
             renderAll();
@@ -504,7 +551,6 @@
             container.innerHTML = html;
         }
 
-        // GENERADOR DE RECIBOS EN IMAGEN PNG CON SUBTOTALES POR EMPRESA
         function downloadImageReceipt(name, isGroup = false) {
             let groupClients = [];
             let total = 0;
@@ -702,9 +748,6 @@
             document.getElementById('query-client').value = document.getElementById('query-client').value || '';
             document.getElementById('query-client').innerHTML = queryClientOptions;
         }
-
-        updateTaxOptions();
-        loadFromFirebase();
     </script>
 </body>
 </html>
