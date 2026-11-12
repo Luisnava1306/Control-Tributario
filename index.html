@@ -23,10 +23,10 @@
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Sincronizado con la nube
                 </div>
                 <nav class="flex gap-2 flex-wrap">
-                    <button type="button" id="btn-dashboard" class="nav-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow" data-target="dashboard">Panel / Registro</button>
-                    <button type="button" id="btn-groups" class="nav-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300" data-target="groups">Grupos</button>
-                    <button type="button" id="btn-directory" class="nav-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300" data-target="directory">Clientes</button>
-                    <button type="button" id="btn-consult" class="nav-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300" data-target="consult">Consultas y Recibos</button>
+                    <button type="button" onclick="switchTab('dashboard')" id="btn-dashboard" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow">Panel / Registro</button>
+                    <button type="button" onclick="switchTab('groups')" id="btn-groups" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Grupos</button>
+                    <button type="button" onclick="switchTab('directory')" id="btn-directory" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Clientes</button>
+                    <button type="button" onclick="switchTab('consult')" id="btn-consult" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Consultas y Recibos</button>
                 </nav>
             </div>
         </header>
@@ -40,7 +40,7 @@
         <!-- CONTENEDOR DE PESTAÑAS -->
         <main>
             <!-- 1. DASHBOARD / REGISTRO -->
-            <div id="tab-dashboard" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div id="tab-dashboard" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow h-fit">
                     <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Registrar Obligación</h3>
                     <form onsubmit="saveObligation(event)" class="space-y-3 text-sm">
@@ -100,7 +100,7 @@
             </div>
 
             <!-- 2. GRUPOS -->
-            <div id="tab-groups" class="tab-content hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div id="tab-groups" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow h-fit">
                     <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Nuevo Grupo de Empresas</h3>
                     <form onsubmit="saveGroup(event)" class="space-y-3 text-sm">
@@ -118,7 +118,7 @@
             </div>
 
             <!-- 3. CLIENTES -->
-            <div id="tab-directory" class="tab-content hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div id="tab-directory" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow h-fit">
                     <h3 id="client-form-title" class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Nuevo Cliente</h3>
                     <form onsubmit="saveClient(event)" class="space-y-3 text-sm">
@@ -154,7 +154,7 @@
             </div>
 
             <!-- 4. CONSULTAS Y RECIBOS -->
-            <div id="tab-consult" class="tab-content hidden bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow space-y-6">
+            <div id="tab-consult" class="hidden bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-700 pb-4">
                     <div>
                         <label class="text-xs text-slate-400 mb-1 block">Consultar por Grupo de Empresas</label>
@@ -214,6 +214,29 @@
         let clients = [];
         let obligations = [];
 
+        // CONTROL DE PESTAÑAS GLOBAL INDEPENDIENTE
+        function switchTab(tab) {
+            const tabs = ['dashboard', 'groups', 'directory', 'consult'];
+            tabs.forEach(t => {
+                const pane = document.getElementById('tab-' + t);
+                const btn = document.getElementById('btn-' + t);
+                if (pane) {
+                    if (t === tab) {
+                        pane.classList.remove('hidden');
+                    } else {
+                        pane.classList.add('hidden');
+                    }
+                }
+                if (btn) {
+                    if (t === tab) {
+                        btn.className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow";
+                    } else {
+                        btn.className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300";
+                    }
+                }
+            });
+        }
+
         // Sincronización en tiempo real desde Firebase
         db.ref('groups').on('value', (snapshot) => {
             const data = snapshot.val();
@@ -262,41 +285,6 @@
             const num = typeof numVal === 'string' ? parseToNumber(numVal) : numVal;
             return num.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
-
-        // CONTROL DE PESTAÑAS BLINDADO POR JAVASCRIPT NATIVO
-        function switchTab(target) {
-            const tabs = ['dashboard', 'groups', 'directory', 'consult'];
-            tabs.forEach(t => {
-                const el = document.getElementById('tab-' + t);
-                const btn = document.getElementById('btn-' + t);
-                if (el) {
-                    if (t === target) {
-                        el.classList.remove('hidden');
-                    } else {
-                        el.classList.add('hidden');
-                    }
-                }
-                if (btn) {
-                    if (t === target) {
-                        btn.className = "nav-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow";
-                    } else {
-                        btn.className = "nav-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300";
-                    }
-                }
-            });
-        }
-
-        // Asignar escuchadores táctiles directos al cargar la página
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.nav-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const targetTab = e.currentTarget.getAttribute('data-target');
-                    switchTab(targetTab);
-                });
-            });
-            updateTaxOptions();
-            switchTab('dashboard');
-        });
 
         function updateTaxOptions() {
             const cat = document.getElementById('ob-category').value;
@@ -349,4 +337,23 @@
         function saveGroup(e) {
             e.preventDefault();
             const name = document.getElementById('group-name').value.trim();
-            if (name
+            if (name) {
+                db.ref('groups').push({ name });
+                e.target.reset();
+            }
+        }
+
+        function deleteGroup(id, groupName) {
+            if (confirm('¿Eliminar este grupo?')) {
+                db.ref('groups/' + id).remove();
+                clients.forEach(c => { 
+                    if (c.group === groupName) {
+                        db.ref('clients/' + c.id).update({ group: '' });
+                    }
+                });
+            }
+        }
+
+        function saveClient(e) {
+            e.preventDefault();
+            const id
