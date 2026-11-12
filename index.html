@@ -40,7 +40,7 @@
         <!-- CONTENEDOR DE PESTAÑAS -->
         <main>
             <!-- 1. DASHBOARD / REGISTRO -->
-            <div id="tab-dashboard" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div id="tab-dashboard" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow h-fit">
                     <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Registrar Obligación</h3>
                     <form onsubmit="saveObligation(event)" class="space-y-3 text-sm">
@@ -100,7 +100,7 @@
             </div>
 
             <!-- 2. GRUPOS -->
-            <div id="tab-groups" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div id="tab-groups" class="tab-content hidden grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow h-fit">
                     <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Nuevo Grupo de Empresas</h3>
                     <form onsubmit="saveGroup(event)" class="space-y-3 text-sm">
@@ -118,7 +118,7 @@
             </div>
 
             <!-- 3. CLIENTES -->
-            <div id="tab-directory" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div id="tab-directory" class="tab-content hidden grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow h-fit">
                     <h3 id="client-form-title" class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Nuevo Cliente</h3>
                     <form onsubmit="saveClient(event)" class="space-y-3 text-sm">
@@ -154,7 +154,7 @@
             </div>
 
             <!-- 4. CONSULTAS Y RECIBOS -->
-            <div id="tab-consult" class="hidden bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow space-y-6">
+            <div id="tab-consult" class="tab-content hidden bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-700 pb-4">
                     <div>
                         <label class="text-xs text-slate-400 mb-1 block">Consultar por Grupo de Empresas</label>
@@ -267,17 +267,26 @@
             ['dashboard', 'groups', 'directory', 'consult'].forEach(t => {
                 const el = document.getElementById('tab-' + t);
                 const btn = document.getElementById('btn-' + t);
-                if (el) el.classList.add('hidden');
+                if (el) {
+                    if (t === tab) {
+                        el.classList.remove('hidden');
+                        // Asegurar grid o block según corresponda
+                        if (t === 'dashboard') el.className = "tab-content grid grid-cols-1 lg:grid-cols-3 gap-6";
+                        else if (t === 'groups') el.className = "tab-content grid grid-cols-1 md:grid-cols-3 gap-6";
+                        else if (t === 'directory') el.className = "tab-content grid grid-cols-1 md:grid-cols-3 gap-6";
+                        else if (t === 'consult') el.className = "tab-content bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow space-y-6";
+                    } else {
+                        el.classList.add('hidden');
+                    }
+                }
                 if (btn) {
-                    btn.className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300";
+                    if (t === tab) {
+                        btn.className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow";
+                    } else {
+                        btn.className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300";
+                    }
                 }
             });
-            const targetTab = document.getElementById('tab-' + tab);
-            const targetBtn = document.getElementById('btn-' + tab);
-            if (targetTab) targetTab.classList.remove('hidden');
-            if (targetBtn) {
-                targetBtn.className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow";
-            }
         }
 
         function updateTaxOptions() {
@@ -332,23 +341,4 @@
             e.preventDefault();
             const name = document.getElementById('group-name').value.trim();
             if (name) {
-                db.ref('groups').push({ name });
-                e.target.reset();
-            }
-        }
-
-        function deleteGroup(id, groupName) {
-            if (confirm('¿Eliminar este grupo?')) {
-                db.ref('groups/' + id).remove();
-                clients.forEach(c => { 
-                    if (c.group === groupName) {
-                        db.ref('clients/' + c.id).update({ group: '' });
-                    }
-                });
-            }
-        }
-
-        function saveClient(e) {
-            e.preventDefault();
-            const id = document.getElementById('client-edit-id').value;
-            const rif = document.getElementById('client-rif').value.trim()
+                db.ref('groups').push({ nam
