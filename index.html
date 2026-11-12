@@ -23,10 +23,10 @@
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Sincronizado con la nube
                 </div>
                 <nav class="flex gap-2 flex-wrap">
-                    <button onclick="switchTab('dashboard')" id="btn-dashboard" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow">Panel / Registro</button>
-                    <button onclick="switchTab('groups')" id="btn-groups" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Grupos</button>
-                    <button onclick="switchTab('directory')" id="btn-directory" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Clientes</button>
-                    <button onclick="switchTab('consult')" id="btn-consult" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Consultas y Recibos</button>
+                    <button type="button" onclick="switchTab('dashboard')" id="btn-dashboard" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow">Panel / Registro</button>
+                    <button type="button" onclick="switchTab('groups')" id="btn-groups" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Grupos</button>
+                    <button type="button" onclick="switchTab('directory')" id="btn-directory" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Clientes</button>
+                    <button type="button" onclick="switchTab('consult')" id="btn-consult" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Consultas y Recibos</button>
                 </nav>
             </div>
         </header>
@@ -265,16 +265,25 @@
 
         function switchTab(tab) {
             ['dashboard', 'groups', 'directory', 'consult'].forEach(t => {
-                document.getElementById('tab-' + t).classList.add('hidden');
-                document.getElementById('btn-' + t).className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300";
+                const el = document.getElementById('tab-' + t);
+                const btn = document.getElementById('btn-' + t);
+                if (el) el.classList.add('hidden');
+                if (btn) {
+                    btn.className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300";
+                }
             });
-            document.getElementById('tab-' + tab).classList.remove('hidden');
-            document.getElementById('btn-' + tab).className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow";
+            const targetTab = document.getElementById('tab-' + tab);
+            const targetBtn = document.getElementById('btn-' + tab);
+            if (targetTab) targetTab.classList.remove('hidden');
+            if (targetBtn) {
+                targetBtn.className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow";
+            }
         }
 
         function updateTaxOptions() {
             const cat = document.getElementById('ob-category').value;
             const select = document.getElementById('ob-tax');
+            if (!select) return;
             select.innerHTML = '';
             (taxCatalog[cat] || []).forEach(opt => {
                 const el = document.createElement('option');
@@ -342,12 +351,4 @@
         function saveClient(e) {
             e.preventDefault();
             const id = document.getElementById('client-edit-id').value;
-            const rif = document.getElementById('client-rif').value.trim();
-            const name = document.getElementById('client-name').value.trim();
-            const group = document.getElementById('client-group').value;
-            const phone = document.getElementById('client-phone').value.trim();
-
-            if (id) {
-                db.ref('clients/' + id).set({ rif, name, group, phone });
-            } else {
-   
+            const rif = document.getElementById('client-rif').value.trim()
