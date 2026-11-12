@@ -62,7 +62,7 @@
     <script>
         // Configuración de Firebase para Legal y Contable, A.C.
         const firebaseConfig = {
-            databaseURL: "https://control-tributario-default-rtdb.firebaseio.com/"
+            databaseURL: "https://control-tributario-e5840-default-rtdb.firebaseio.com/"
         };
 
         // Inicializar Firebase
@@ -100,82 +100,4 @@
         function addObligation() {
             const clientId = document.getElementById('obligation-client').value;
             const name = document.getElementById('obligation-name').value.trim();
-            const date = document.getElementById('obligation-date').value.trim();
-            
-            if (!clientId || !name || !date) {
-                alert('Por favor complete todos los campos de la obligación.');
-                return;
-            }
-            db.ref('obligations').push({ clientId, name, date, status: 'Pendiente' });
-            document.getElementById('obligation-name').value = '';
-            document.getElementById('obligation-date').value = '';
-        }
-
-        function toggleStatus(id, currentStatus) {
-            const newStatus = currentStatus === 'Pendiente' ? 'Completado' : 'Pendiente';
-            db.ref('obligations/' + id).update({ status: newStatus });
-        }
-
-        function deleteObligation(id) {
-            if (confirm('¿Desea eliminar esta obligación?')) {
-                db.ref('obligations/' + id).remove();
-            }
-        }
-
-        function updateUI() {
-            // Actualizar selector de clientes
-            const select = document.getElementById('obligation-client');
-            select.innerHTML = '<option value="">Seleccione un Cliente...</option>';
-            dbClients.forEach(c => {
-                select.innerHTML += `<option value="${c.id}">${c.name} ${c.group ? '(' + c.group + ')' : ''}</option>`;
-            });
-
-            // Renderizar listado principal
-            const container = document.getElementById('data-container');
-            if (dbClients.length === 0) {
-                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">No hay clientes registrados aún.</p>';
-                return;
-            }
-
-            let html = '';
-            dbClients.forEach(client => {
-                const clientObs = dbObligations.filter(o => o.clientId === client.id);
-                html += `
-                    <div class="border border-slate-700 bg-slate-900/50 rounded-xl p-4">
-                        <div class="flex justify-between items-center mb-2">
-                            <h3 class="font-bold text-sm text-emerald-400">${client.name}</h3>
-                            <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">${client.group || 'Sin Grupo'}</span>
-                        </div>
-                `;
-
-                if (clientObs.length === 0) {
-                    html += `<p class="text-xs text-slate-500 italic">Sin obligaciones registradas.</p>`;
-                } else {
-                    html += `<div class="space-y-2 mt-2">`;
-                    clientObs.forEach(obs => {
-                        const isDone = obs.status === 'Completado';
-                        html += `
-                            <div class="flex justify-between items-center bg-slate-800 p-2.5 rounded-lg border border-slate-700/60 text-xs">
-                                <div class="flex items-center gap-3">
-                                    <input type="checkbox" ${isDone ? 'checked' : ''} onclick="toggleStatus('${obs.id}', '${obs.status}')" class="w-4 h-4 accent-emerald-500 cursor-pointer">
-                                    <div>
-                                        <p class="${isDone ? 'line-through text-slate-500' : 'text-slate-200'} font-medium">${obs.name}</p>
-                                        <p class="text-[10px] text-slate-400">Vence: ${obs.date}</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="px-2 py-0.5 rounded text-[10px] ${isDone ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-amber-950 text-amber-300 border border-amber-800'}">${obs.status}</span>
-                                    <button onclick="deleteObligation('${obs.id}')" class="text-red-400 hover:text-red-300 font-bold px-1.5 py-0.5">✕</button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    html += `</div>`;
-                }
-                html += `</div>`;
-            });
-            container.innerHTML = html;
-        }
-    </script>
-</body>
-</html>
+            const date = document
