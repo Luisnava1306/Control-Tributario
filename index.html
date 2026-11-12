@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -24,10 +23,10 @@
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Sincronizado con la nube
                 </div>
                 <nav class="flex gap-2 flex-wrap">
-                    <button onclick="switchTab('dashboard')" id="btn-dashboard" class="px-3 py-1.5 rounded-xl text-xs font-medium transition bg-emerald-600 text-white shadow">Panel</button>
-                    <button onclick="switchTab('groups')" id="btn-groups" class="px-3 py-1.5 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Grupos</button>
-                    <button onclick="switchTab('directory')" id="btn-directory" class="px-3 py-1.5 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Clientes</button>
-                    <button onclick="switchTab('consult')" id="btn-consult" class="px-3 py-1.5 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Consultas</button>
+                    <button onclick="switchTab('dashboard')" id="btn-dashboard" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow">Panel / Registro</button>
+                    <button onclick="switchTab('groups')" id="btn-groups" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Grupos</button>
+                    <button onclick="switchTab('directory')" id="btn-directory" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Clientes</button>
+                    <button onclick="switchTab('consult')" id="btn-consult" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Consultas y Recibos</button>
                 </nav>
             </div>
         </header>
@@ -93,7 +92,7 @@
                 </div>
 
                 <div class="lg:col-span-2 bg-slate-800 p-5 rounded-xl border border-slate-700 shadow">
-                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Registros en Tiempo Real</h3>
+                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Registros Recientes en la Nube</h3>
                     <div id="obligations-list" class="space-y-3">
                         <p class="text-xs text-slate-400 text-center py-6">Cargando datos desde la nube...</p>
                     </div>
@@ -211,29 +210,144 @@
             ]
         };
 
-        let dbGroups = [];
-        let dbClients = [];
-        let dbObligations = [];
+        let groups = [];
+        let clients = [];
+        let obligations = [];
 
-        // Sincronización en tiempo real con Firebase Realtime Database
+        // Sincronización en tiempo real desde Firebase
         db.ref('groups').on('value', (snapshot) => {
             const data = snapshot.val();
-            dbGroups = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+            groups = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
             renderAll();
         });
 
         db.ref('clients').on('value', (snapshot) => {
             const data = snapshot.val();
-            dbClients = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+            clients = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
             renderAll();
         });
 
         db.ref('obligations').on('value', (snapshot) => {
             const data = snapshot.val();
-            dbObligations = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+            obligations = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
             renderAll();
         });
 
         function formatDate(dateStr) {
             if (!dateStr) return 'N/A';
-            const
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return dateStr;
+        }
+
+        function parseToNumber(str) {
+            if (!str) return 0;
+            let clean = str.toString().trim();
+            if (clean.includes('.') && clean.includes(',')) {
+                clean = clean.replace(/\./g, '').replace(',', '.');
+            } else if (clean.includes(',')) {
+                clean = clean.replace(',', '.');
+            } else if (clean.split('.').length > 2) {
+                clean = clean.replace(/\./g, (match, offset, string) => {
+                    return offset === string.lastIndexOf('.') ? '.' : '';
+                });
+            }
+            const num = parseFloat(clean);
+            return isNaN(num) ? 0 : num;
+        }
+
+        function formatCurrency(numVal) {
+            const num = typeof numVal === 'string' ? parseToNumber(numVal) : numVal;
+            return num.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function switchTab(tab) {
+            ['dashboard', 'groups', 'directory', 'consult'].forEach(t => {
+                document.getElementById('tab-' + t).classList.add('hidden');
+                document.getElementById('btn-' + t).className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300";
+            });
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.getElementById('btn-' + tab).className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow";
+        }
+
+        function updateTaxOptions() {
+            const cat = document.getElementById('ob-category').value;
+            const select = document.getElementById('ob-tax');
+            select.innerHTML = '';
+            (taxCatalog[cat] || []).forEach(opt => {
+                const el = document.createElement('option');
+                el.value = opt;
+                el.textContent = opt;
+                select.appendChild(el);
+            });
+        }
+
+        function autofillClient(val) {
+            const found = clients.find(c => c.rif.toLowerCase().includes(val.toLowerCase()) || val.toLowerCase().includes(c.rif.toLowerCase()));
+            if (found) {
+                document.getElementById('ob-client').value = found.name;
+            }
+        }
+
+        function saveObligation(e) {
+            e.preventDefault();
+            const rifVal = document.getElementById('ob-rif').value.trim();
+            const nameVal = document.getElementById('ob-client').value.trim();
+            const matchedClient = clients.find(c => c.name.toLowerCase() === nameVal.toLowerCase() || c.rif.toLowerCase() === rifVal.toLowerCase());
+            
+            const newOb = {
+                rif: rifVal || (matchedClient ? matchedClient.rif : 'S/N'),
+                clientName: nameVal,
+                group: matchedClient ? matchedClient.group : '',
+                category: document.getElementById('ob-category').value,
+                taxType: document.getElementById('ob-tax').value,
+                period: document.getElementById('ob-period').value,
+                dueDate: document.getElementById('ob-duedate').value,
+                amountStr: document.getElementById('ob-amount').value,
+                status: document.getElementById('ob-status').value
+            };
+            db.ref('obligations').push(newOb);
+            e.target.reset();
+            updateTaxOptions();
+        }
+
+        function deleteObligation(id) {
+            if (confirm('¿Eliminar esta obligación de la nube?')) {
+                db.ref('obligations/' + id).remove();
+            }
+        }
+
+        function saveGroup(e) {
+            e.preventDefault();
+            const name = document.getElementById('group-name').value.trim();
+            if (name) {
+                db.ref('groups').push({ name });
+                e.target.reset();
+            }
+        }
+
+        function deleteGroup(id, groupName) {
+            if (confirm('¿Eliminar este grupo?')) {
+                db.ref('groups/' + id).remove();
+                clients.forEach(c => { 
+                    if (c.group === groupName) {
+                        db.ref('clients/' + c.id).update({ group: '' });
+                    }
+                });
+            }
+        }
+
+        function saveClient(e) {
+            e.preventDefault();
+            const id = document.getElementById('client-edit-id').value;
+            const rif = document.getElementById('client-rif').value.trim();
+            const name = document.getElementById('client-name').value.trim();
+            const group = document.getElementById('client-group').value;
+            const phone = document.getElementById('client-phone').value.trim();
+
+            if (id) {
+                db.ref('clients/' + id).set({ rif, name, group, phone });
+            } else {
+   
