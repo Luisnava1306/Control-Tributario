@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,65 +11,168 @@
     <!-- Firebase Database -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans p-4 md:p-8 min-h-screen">
-    <div class="max-w-5xl mx-auto space-y-6">
+<body class="bg-slate-900 text-slate-100 font-sans p-4">
+    <div class="max-w-4xl mx-auto space-y-6">
         <!-- HEADER -->
-        <header class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
+        <header class="bg-slate-800 border border-slate-700 p-5 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-                <h1 class="text-2xl font-black text-emerald-400 tracking-tight">Legal y Contable, A.C.</h1>
-                <p class="text-xs text-slate-400 font-medium mt-0.5">Sistema de Control Tributario y Parafiscal en Tiempo Real</p>
+                <h1 class="text-xl font-bold text-emerald-400">Legal y Contable, A.C.</h1>
+                <p class="text-xs text-slate-400">Control Tributario y Parafiscal en Tiempo Real</p>
             </div>
-            <div id="sync-status" class="text-xs bg-emerald-950/80 text-emerald-300 px-3.5 py-1.5 rounded-full border border-emerald-800/60 flex items-center gap-2 shadow-inner">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Sincronizado con la nube
+            <div class="flex items-center gap-3 flex-wrap">
+                <div id="sync-status" class="text-xs bg-emerald-950 text-emerald-300 px-3 py-1.5 rounded-full border border-emerald-700 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Sincronizado con la nube
+                </div>
+                <nav class="flex gap-2 flex-wrap">
+                    <button onclick="switchTab('dashboard')" id="btn-dashboard" class="px-3 py-1.5 rounded-xl text-xs font-medium transition bg-emerald-600 text-white shadow">Panel</button>
+                    <button onclick="switchTab('groups')" id="btn-groups" class="px-3 py-1.5 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Grupos</button>
+                    <button onclick="switchTab('directory')" id="btn-directory" class="px-3 py-1.5 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Clientes</button>
+                    <button onclick="switchTab('consult')" id="btn-consult" class="px-3 py-1.5 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Consultas</button>
+                </nav>
             </div>
         </header>
 
-        <!-- PANEL DE CONTROL / FORMULARIOS -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Registrar Cliente / Grupo -->
-            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-lg flex flex-col justify-between">
-                <div>
-                    <h2 class="text-xs font-bold text-slate-300 mb-4 uppercase tracking-wider flex items-center gap-2">
-                        <span class="w-1.5 h-3.5 bg-emerald-500 rounded-full"></span> Gestión de Clientes y Grupos
-                    </h2>
-                    <div class="space-y-3.5">
-                        <input type="text" id="client-name" placeholder="Nombre de la Empresa / Cliente" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-100 transition">
-                        <input type="text" id="client-group" placeholder="Grupo o Sucursal (Opcional)" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-100 transition">
+        <!-- TOTAL PENDIENTE GLOBAL -->
+        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow">
+            <span class="text-xs text-slate-400 uppercase tracking-wider">Total General Pendiente / Vencido</span>
+            <h3 id="total-pendiente" class="text-2xl font-bold text-amber-400 mt-1">Bs. 0,00</h3>
+        </div>
+
+        <!-- CONTENEDOR DE PESTAÑAS -->
+        <main>
+            <!-- 1. DASHBOARD / REGISTRO -->
+            <div id="tab-dashboard" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow h-fit">
+                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Registrar Obligación</h3>
+                    <form onsubmit="saveObligation(event)" class="space-y-3 text-sm">
+                        <div>
+                            <label class="text-xs text-slate-400 mb-1 block">RIF del Cliente (Autocompleta)</label>
+                            <input type="text" id="ob-rif" oninput="autofillClient(this.value)" placeholder="Ej: J-12345678-9" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 mb-1 block">Razón Social *</label>
+                            <input type="text" id="ob-client" required placeholder="Nombre empresa" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 mb-1 block">Categoría</label>
+                            <select id="ob-category" onchange="updateTaxOptions()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 text-xs">
+                                <option>Impuestos Nacionales (SENIAT)</option>
+                                <option>Impuestos Municipales</option>
+                                <option>Parafiscales</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 mb-1 block">Impuesto / Tributo</label>
+                            <select id="ob-tax" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 text-xs"></select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-xs text-slate-400 mb-1 block">Periodo</label>
+                                <input type="text" id="ob-period" placeholder="Ej: Noviembre 2026" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-400 mb-1 block">Vencimiento *</label>
+                                <input type="date" id="ob-duedate" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 mb-1 block">Monto (Bs.) *</label>
+                            <input type="text" id="ob-amount" required placeholder="Ej: 1.985,36" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 font-mono" />
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 mb-1 block">Estado</label>
+                            <select id="ob-status" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100">
+                                <option>Pendiente</option>
+                                <option>En Proceso</option>
+                                <option>Pagado</option>
+                                <option>Vencido</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl transition shadow mt-2">Guardar Obligación</button>
+                    </form>
+                </div>
+
+                <div class="lg:col-span-2 bg-slate-800 p-5 rounded-xl border border-slate-700 shadow">
+                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Registros en Tiempo Real</h3>
+                    <div id="obligations-list" class="space-y-3">
+                        <p class="text-xs text-slate-400 text-center py-6">Cargando datos desde la nube...</p>
                     </div>
                 </div>
-                <button onclick="addClient()" class="mt-5 w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-900/20 active:scale-[0.99]">Agregar Cliente</button>
             </div>
 
-            <!-- Registrar Obligación -->
-            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-lg flex flex-col justify-between">
-                <div>
-                    <h2 class="text-xs font-bold text-slate-300 mb-4 uppercase tracking-wider flex items-center gap-2">
-                        <span class="w-1.5 h-3.5 bg-blue-500 rounded-full"></span> Registro de Obligación
-                    </h2>
-                    <div class="space-y-3.5">
-                        <select id="obligation-client" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-100 transition">
-                            <option value="">Seleccione un Cliente...</option>
+            <!-- 2. GRUPOS -->
+            <div id="tab-groups" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow h-fit">
+                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Nuevo Grupo de Empresas</h3>
+                    <form onsubmit="saveGroup(event)" class="space-y-3 text-sm">
+                        <div>
+                            <label class="text-xs text-slate-400 mb-1 block">Nombre del Grupo *</label>
+                            <input type="text" id="group-name" required placeholder="Ej: Grupo Empresarial Zulia" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl transition shadow">Guardar Grupo</button>
+                    </form>
+                </div>
+                <div class="md:col-span-2 bg-slate-800 p-5 rounded-xl border border-slate-700 shadow space-y-3">
+                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Grupos Registrados</h3>
+                    <div id="groups-list" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- 3. CLIENTES -->
+            <div id="tab-directory" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow h-fit">
+                    <h3 id="client-form-title" class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Nuevo Cliente</h3>
+                    <form onsubmit="saveClient(event)" class="space-y-3 text-sm">
+                        <input type="hidden" id="client-edit-id" />
+                        <div>
+                            <label class="text-xs text-slate-400 mb-1 block">RIF *</label>
+                            <input type="text" id="client-rif" required placeholder="J-12345678-9" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 mb-1 block">Razón Social *</label>
+                            <input type="text" id="client-name" required placeholder="Nombre empresa" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 mb-1 block">Grupo de Empresas</label>
+                            <select id="client-group" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100">
+                                <option value="">Sin Grupo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 mb-1 block">Teléfono</label>
+                            <input type="text" id="client-phone" placeholder="0414-0000000" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                        </div>
+                        <div class="flex gap-2 pt-2">
+                            <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 rounded-xl transition shadow text-xs">Guardar</button>
+                            <button type="button" onclick="resetClientForm()" class="bg-slate-700 px-3 py-2 rounded-xl text-xs">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="md:col-span-2 bg-slate-800 p-5 rounded-xl border border-slate-700 shadow space-y-3">
+                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Directorio Activo de Clientes</h3>
+                    <div id="clients-list" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- 4. CONSULTAS Y RECIBOS -->
+            <div id="tab-consult" class="hidden bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-700 pb-4">
+                    <div>
+                        <label class="text-xs text-slate-400 mb-1 block">Consultar por Grupo de Empresas</label>
+                        <select id="query-group" onchange="handleGroupQuery(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 text-sm">
+                            <option value="">-- Seleccionar Grupo --</option>
                         </select>
-                        <input type="text" id="obligation-name" placeholder="Nombre del Impuesto / Obligación (Ej: IVA, ISLR)" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-100 transition">
-                        <input type="text" id="obligation-date" placeholder="Fecha límite (dd/mm/aaaa)" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-100 transition">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 mb-1 block">O Consultar Empresa Específica</label>
+                        <select id="query-client" onchange="handleClientQuery(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 text-sm">
+                            <option value="">-- Seleccionar Empresa --</option>
+                        </select>
                     </div>
                 </div>
-                <button onclick="addObligation()" class="mt-5 w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-blue-900/20 active:scale-[0.99]">Registrar Obligación</button>
+                <div id="query-results"></div>
             </div>
-        </div>
-
-        <!-- DIRECTORIO Y ESTADO DE OBLIGACIONES -->
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-lg">
-            <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
-                <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                    <span class="w-1.5 h-3.5 bg-purple-500 rounded-full"></span> Directorio y Estado de Obligaciones
-                </h2>
-                <div id="stats-summary" class="text-xs text-slate-400 font-medium">Cargando métricas...</div>
-            </div>
-            <div id="data-container" class="space-y-4">
-                <div class="text-center py-12 text-slate-500 text-sm">Cargando datos desde la nube...</div>
-            </div>
-        </div>
+        </main>
     </div>
 
     <!-- SCRIPT DE FIREBASE Y LÓGICA DE LA APLICACIÓN -->
@@ -80,124 +184,56 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        const taxCatalog = {
+            "Impuestos Nacionales (SENIAT)": [
+                "Anticipo ISLR (quincenal)",
+                "Contribución a las Pensiones",
+                "IGTF - Impuesto a las Grandes Transacciones Financieras",
+                "IVA - Impuesto al Valor Agregado",
+                "ISLR - Impuesto Sobre La Renta",
+                "ISLR declarado por anticipado",
+                "RIVA - Retenciones de IVA",
+                "RISLR - Retenciones de ISLR"
+            ],
+            "Impuestos Municipales": [
+                "ISAE - Impuesto Sobre Actividad Económica",
+                "Publicidad y Propaganda",
+                "Servicio de Aseo",
+                "Servicio de Gas",
+                "Tasa por Renovación de Licencia"
+            ],
+            "Parafiscales": [
+                "CLAD - Contribución Ley Anti Drogas",
+                "FONACIT - Fondo Nacional de Ciencia, Tecnología e Innovación",
+                "INCES - Instituto Nacional de Capacitación y Educación Socialista",
+                "RPVH - Régimen Prestacional de Vivienda y Hábitat",
+                "SSO - Seguro Social Obligatorio"
+            ]
+        };
+
+        let dbGroups = [];
         let dbClients = [];
         let dbObligations = [];
+
+        // Sincronización en tiempo real con Firebase Realtime Database
+        db.ref('groups').on('value', (snapshot) => {
+            const data = snapshot.val();
+            dbGroups = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+            renderAll();
+        });
 
         db.ref('clients').on('value', (snapshot) => {
             const data = snapshot.val();
             dbClients = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
-            updateUI();
+            renderAll();
         });
 
         db.ref('obligations').on('value', (snapshot) => {
             const data = snapshot.val();
             dbObligations = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
-            updateUI();
+            renderAll();
         });
 
-        function addClient() {
-            const name = document.getElementById('client-name').value.trim();
-            const group = document.getElementById('client-group').value.trim();
-            if (!name) {
-                alert('Por favor ingrese el nombre del cliente.');
-                return;
-            }
-            db.ref('clients').push({ name, group });
-            document.getElementById('client-name').value = '';
-            document.getElementById('client-group').value = '';
-        }
-
-        function addObligation() {
-            const clientId = document.getElementById('obligation-client').value;
-            const name = document.getElementById('obligation-name').value.trim();
-            const date = document.getElementById('obligation-date').value.trim();
-            
-            if (!clientId || !name || !date) {
-                alert('Por favor complete todos los campos de la obligación.');
-                return;
-            }
-            db.ref('obligations').push({ clientId, name, date, status: 'Pendiente' });
-            document.getElementById('obligation-name').value = '';
-            document.getElementById('obligation-date').value = '';
-        }
-
-        function toggleStatus(id, currentStatus) {
-            const newStatus = currentStatus === 'Pendiente' ? 'Completado' : 'Pendiente';
-            db.ref('obligations/' + id).update({ status: newStatus });
-        }
-
-        function deleteObligation(id) {
-            if (confirm('¿Desea eliminar esta obligación?')) {
-                db.ref('obligations/' + id).remove();
-            }
-        }
-
-        function updateUI() {
-            const select = document.getElementById('obligation-client');
-            select.innerHTML = '<option value="">Seleccione un Cliente...</option>';
-            dbClients.forEach(c => {
-                select.innerHTML += `<option value="${c.id}">${c.name} ${c.group ? '(' + c.group + ')' : ''}</option>`;
-            });
-
-            const container = document.getElementById('data-container');
-            const stats = document.getElementById('stats-summary');
-
-            if (dbClients.length === 0) {
-                container.innerHTML = '<div class="text-center py-12 text-slate-500 text-sm border border-dashed border-slate-800 rounded-xl">No hay clientes registrados aún. Comience agregando uno arriba.</div>';
-                stats.innerHTML = '0 Clientes | 0 Obligaciones';
-                return;
-            }
-
-            let totalObs = dbObligations.length;
-            let completedObs = dbObligations.filter(o => o.status === 'Completado').length;
-            stats.innerHTML = `<span class="text-emerald-400 font-semibold">${dbClients.length}</span> Clientes | <span class="text-blue-400 font-semibold">${completedObs}/${totalObs}</span> Completadas`;
-
-            let html = '';
-            dbClients.forEach(client => {
-                const clientObs = dbObligations.filter(o => o.clientId === client.id);
-                const clientDone = clientObs.filter(o => o.status === 'Completado').length;
-                
-                html += `
-                    <div class="border border-slate-800 bg-slate-950/60 rounded-xl p-4 md:p-5 transition hover:border-slate-700">
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 border-b border-slate-800/80 pb-3">
-                            <div>
-                                <h3 class="font-bold text-sm text-emerald-400 tracking-wide">${client.name}</h3>
-                                <p class="text-[11px] text-slate-400">${client.group ? 'Grupo: ' + client.group : 'Cliente independiente'}</p>
-                            </div>
-                            <span class="text-xs bg-slate-900 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-800 font-medium">
-                                Progreso: ${clientDone}/${clientObs.length}
-                            </span>
-                        </div>
-                `;
-
-                if (clientObs.length === 0) {
-                    html += `<p class="text-xs text-slate-500 italic py-2">Sin obligaciones tributarias registradas.</p>`;
-                } else {
-                    html += `<div class="space-y-2 mt-3">`;
-                    clientObs.forEach(obs => {
-                        const isDone = obs.status === 'Completado';
-                        html += `
-                            <div class="flex justify-between items-center bg-slate-900/90 p-3 rounded-xl border border-slate-800/70 text-xs gap-3">
-                                <div class="flex items-center gap-3.5">
-                                    <input type="checkbox" ${isDone ? 'checked' : ''} onclick="toggleStatus('${obs.id}', '${obs.status}')" class="w-4 h-4 accent-emerald-500 cursor-pointer rounded">
-                                    <div>
-                                        <p class="${isDone ? 'line-through text-slate-500' : 'text-slate-200'} font-semibold text-sm">${obs.name}</p>
-                                        <p class="text-[11px] text-slate-400 mt-0.5">Vencimiento: <span class="text-slate-300 font-medium">${obs.date}</span></p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <span class="px-2.5 py-1 rounded-lg text-[11px] font-medium ${isDone ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-800/80' : 'bg-amber-950/80 text-amber-300 border border-amber-800/80'}">${obs.status}</span>
-                                    <button onclick="deleteObligation('${obs.id}')" class="text-slate-500 hover:text-red-400 font-bold px-2 py-1 transition text-sm">✕</button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    html += `</div>`;
-                }
-                html += `</div>`;
-            });
-            container.innerHTML = html;
-        }
-    </script>
-</body>
-</html>
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            const
