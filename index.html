@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Legal y Contable, A.C. - Control Tributario</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase App (SDK core) -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <!-- Firebase Database -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans p-4">
     <div class="max-w-4xl mx-auto space-y-6">
@@ -16,25 +12,25 @@
         <header class="bg-slate-800 border border-slate-700 p-5 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-xl font-bold text-emerald-400">Legal y Contable, A.C.</h1>
-                <p class="text-xs text-slate-400">Control Tributario y Parafiscal en Tiempo Real</p>
+                <p class="text-xs text-slate-400">Control Tributario y Parafiscal (Sincronizado en la Nube)</p>
             </div>
-            <div class="flex items-center gap-3 flex-wrap">
-                <div id="sync-status" class="text-xs bg-emerald-950 text-emerald-300 px-3 py-1.5 rounded-full border border-emerald-700 flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Sincronizado con la nube
-                </div>
-                <nav class="flex gap-2 flex-wrap">
-                    <button type="button" onclick="switchTab('dashboard')" id="btn-dashboard" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow">Panel / Registro</button>
-                    <button type="button" onclick="switchTab('groups')" id="btn-groups" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Grupos</button>
-                    <button type="button" onclick="switchTab('directory')" id="btn-directory" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Clientes</button>
-                    <button type="button" onclick="switchTab('consult')" id="btn-consult" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Consultas y Recibos</button>
-                </nav>
-            </div>
+            <nav class="flex gap-2 flex-wrap">
+                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow">Panel / Registro</button>
+                <button onclick="switchTab('groups')" id="btn-groups" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Grupos</button>
+                <button onclick="switchTab('directory')" id="btn-directory" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Clientes</button>
+                <button onclick="switchTab('consult')" id="btn-consult" class="px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Consultas y Recibos</button>
+            </nav>
         </header>
 
         <!-- TOTAL PENDIENTE GLOBAL -->
-        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow">
-            <span class="text-xs text-slate-400 uppercase tracking-wider">Total General Pendiente / Vencido</span>
-            <h3 id="total-pendiente" class="text-2xl font-bold text-amber-400 mt-1">Bs. 0,00</h3>
+        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex justify-between items-center">
+            <div>
+                <span class="text-xs text-slate-400 uppercase tracking-wider">Total General Pendiente / Vencido</span>
+                <h3 id="total-pendiente" class="text-2xl font-bold text-amber-400 mt-1">Bs. 0,00</h3>
+            </div>
+            <div id="sync-status" class="text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1.5 rounded-lg">
+                ☁️ Sincronizado con Firebase
+            </div>
         </div>
 
         <!-- CONTENEDOR DE PESTAÑAS -->
@@ -92,10 +88,8 @@
                 </div>
 
                 <div class="lg:col-span-2 bg-slate-800 p-5 rounded-xl border border-slate-700 shadow">
-                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Registros Recientes en la Nube</h3>
-                    <div id="obligations-list" class="space-y-3">
-                        <p class="text-xs text-slate-400 text-center py-6">Cargando datos desde la nube...</p>
-                    </div>
+                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Registros Recientes</h3>
+                    <div id="obligations-list" class="space-y-3"></div>
                 </div>
             </div>
 
@@ -174,14 +168,9 @@
         </main>
     </div>
 
-    <!-- SCRIPT DE FIREBASE Y LÓGICA DE LA APLICACIÓN -->
+    <!-- SCRIPT LÓGICO CON FIREBASE -->
     <script>
-        const firebaseConfig = {
-            databaseURL: "https://control-tributario-e5840-default-rtdb.firebaseio.com/"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        const FIREBASE_URL = "https://control-tributario-e5840-default-rtdb.firebaseio.com";
 
         const taxCatalog = {
             "Impuestos Nacionales (SENIAT)": [
@@ -210,55 +199,68 @@
             ]
         };
 
-        let groups = [];
-        let clients = [];
-        let obligations = [];
+        // Datos iniciales en memoria (respaldo local)
+        let groups = JSON.parse(localStorage.getItem('lc_groups_native')) || [
+            { id: 1, name: 'Grupo Empresarial Zulia' },
+            { id: 2, name: 'Consorcio Comercial' }
+        ];
 
-        // FUNCIÓN DE CAMBIO DE PESTAÑAS BLINDADA Y EXPLÍCITA
-        function switchTab(tabName) {
-            const tabs = ['dashboard', 'groups', 'directory', 'consult'];
-            tabs.forEach(t => {
-                const pane = document.getElementById('tab-' + t);
-                const btn = document.getElementById('btn-' + t);
-                
-                if (pane) {
-                    if (t === tabName) {
-                        pane.style.display = 'grid'; // Forzar visualización directa por estilo inline
-                        pane.classList.remove('hidden');
-                    } else {
-                        pane.style.display = 'none'; // Forzar ocultamiento absoluto
-                        pane.classList.add('hidden');
+        let clients = JSON.parse(localStorage.getItem('lc_clients_native')) || [
+            { id: 1, rif: 'J-12345678-9', name: 'Comercial El Carmen, C.A.', group: 'Grupo Empresarial Zulia', phone: '0414-6123456' },
+            { id: 2, rif: 'J-98765432-1', name: 'Inversiones Falcon, F.P.', group: 'Consorcio Comercial', phone: '0424-9876543' }
+        ];
+
+        let obligations = JSON.parse(localStorage.getItem('lc_obligations_native')) || [
+            { id: 1, clientName: 'Comercial El Carmen, C.A.', rif: 'J-12345678-9', group: 'Grupo Empresarial Zulia', category: 'Impuestos Nacionales (SENIAT)', taxType: 'IVA - Impuesto al Valor Agregado', period: 'Noviembre 2026', dueDate: '2026-11-18', amountStr: '1.985,36', status: 'Pendiente' },
+            { id: 2, clientName: 'Comercial El Carmen, C.A.', rif: 'J-12345678-9', group: 'Grupo Empresarial Zulia', category: 'Impuestos Nacionales (SENIAT)', taxType: 'IVA - Impuesto al Valor Agregado', period: 'Diciembre 2026', dueDate: '2026-12-18', amountStr: '1.985,36', status: 'Pendiente' }
+        ];
+
+        // Sincronización con Firebase al cargar
+        async function loadFromFirebase() {
+            try {
+                const res = await fetch(`${FIREBASE_URL}/data.json`);
+                if (res.ok) {
+                    const remoteData = await res.json();
+                    if (remoteData) {
+                        if (remoteData.groups) groups = remoteData.groups;
+                        if (remoteData.clients) clients = remoteData.clients;
+                        if (remoteData.obligations) obligations = remoteData.obligations;
                     }
                 }
-                
-                if (btn) {
-                    if (t === tabName) {
-                        btn.className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow";
-                    } else {
-                        btn.className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300";
-                    }
-                }
-            });
+                saveToLocalStorage();
+                renderAll();
+                document.getElementById('sync-status').innerHTML = "☁️ Sincronizado con Firebase";
+            } catch (err) {
+                console.warn("Modo offline o error al conectar con Firebase, usando respaldo local.", err);
+                document.getElementById('sync-status').innerHTML = "⚡ Modo Local (Offline)";
+                renderAll();
+            }
         }
 
-        // Sincronización en tiempo real desde Firebase
-        db.ref('groups').on('value', (snapshot) => {
-            const data = snapshot.val();
-            groups = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+        // Guardar cambios en LocalStorage y Firebase de forma asíncrona
+        async function saveData() {
+            saveToLocalStorage();
             renderAll();
-        });
+            
+            try {
+                document.getElementById('sync-status').innerHTML = "🔄 Sincronizando...";
+                await fetch(`${FIREBASE_URL}/data.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ groups, clients, obligations })
+                });
+                document.getElementById('sync-status').innerHTML = "☁️ Sincronizado con Firebase";
+            } catch (err) {
+                console.error("Error al sincronizar con Firebase:", err);
+                document.getElementById('sync-status').innerHTML = "⚠️ Error de Sincronización";
+            }
+        }
 
-        db.ref('clients').on('value', (snapshot) => {
-            const data = snapshot.val();
-            clients = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
-            renderAll();
-        });
-
-        db.ref('obligations').on('value', (snapshot) => {
-            const data = snapshot.val();
-            obligations = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
-            renderAll();
-        });
+        function saveToLocalStorage() {
+            localStorage.setItem('lc_groups_native', JSON.stringify(groups));
+            localStorage.setItem('lc_clients_native', JSON.stringify(clients));
+            localStorage.setItem('lc_obligations_native', JSON.stringify(obligations));
+        }
 
         function formatDate(dateStr) {
             if (!dateStr) return 'N/A';
@@ -290,10 +292,18 @@
             return num.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
+        function switchTab(tab) {
+            ['dashboard', 'groups', 'directory', 'consult'].forEach(t => {
+                document.getElementById('tab-' + t).classList.add('hidden');
+                document.getElementById('btn-' + t).className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300";
+            });
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.getElementById('btn-' + tab).className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow";
+        }
+
         function updateTaxOptions() {
             const cat = document.getElementById('ob-category').value;
             const select = document.getElementById('ob-tax');
-            if (!select) return;
             select.innerHTML = '';
             (taxCatalog[cat] || []).forEach(opt => {
                 const el = document.createElement('option');
@@ -312,14 +322,10 @@
 
         function saveObligation(e) {
             e.preventDefault();
-            const rifVal = document.getElementById('ob-rif').value.trim();
-            const nameVal = document.getElementById('ob-client').value.trim();
-            const matchedClient = clients.find(c => c.name.toLowerCase() === nameVal.toLowerCase() || c.rif.toLowerCase() === rifVal.toLowerCase());
-            
             const newOb = {
-                rif: rifVal || (matchedClient ? matchedClient.rif : 'S/N'),
-                clientName: nameVal,
-                group: matchedClient ? matchedClient.group : '',
+                id: Date.now(),
+                rif: document.getElementById('ob-rif').value || 'S/N',
+                clientName: document.getElementById('ob-client').value,
                 category: document.getElementById('ob-category').value,
                 taxType: document.getElementById('ob-tax').value,
                 period: document.getElementById('ob-period').value,
@@ -327,28 +333,378 @@
                 amountStr: document.getElementById('ob-amount').value,
                 status: document.getElementById('ob-status').value
             };
-            db.ref('obligations').push(newOb);
+            obligations.unshift(newOb);
+            saveData();
             e.target.reset();
             updateTaxOptions();
         }
 
         function deleteObligation(id) {
-            if (confirm('¿Eliminar esta obligación de la nube?')) {
-                db.ref('obligations/' + id).remove();
+            if (confirm('¿Eliminar esta obligación?')) {
+                obligations = obligations.filter(o => o.id !== id);
+                saveData();
             }
         }
 
         function saveGroup(e) {
             e.preventDefault();
-            const name = document.getElementById('group-name').value.trim();
+            const name = document.getElementById('group-name').value;
             if (name) {
-                db.ref('groups').push({ name });
+                groups.push({ id: Date.now(), name });
+                saveData();
                 e.target.reset();
             }
         }
 
-        function deleteGroup(id, groupName) {
+        function deleteGroup(id) {
             if (confirm('¿Eliminar este grupo?')) {
-                db.ref('groups/' + id).remove();
-                clients.forEach(c => { 
-                    if (c.grou
+                const g = groups.find(x => x.id === id);
+                groups = groups.filter(x => x.id !== id);
+                clients.forEach(c => { if (c.group === g.name) c.group = ''; });
+                saveData();
+            }
+        }
+
+        function saveClient(e) {
+            e.preventDefault();
+            const id = document.getElementById('client-edit-id').value;
+            const rif = document.getElementById('client-rif').value;
+            const name = document.getElementById('client-name').value;
+            const group = document.getElementById('client-group').value;
+            const phone = document.getElementById('client-phone').value;
+
+            if (id) {
+                clients = clients.map(c => c.id == id ? { ...c, rif, name, group, phone } : c);
+            } else {
+                clients.push({ id: Date.now(), rif, name, group, phone });
+            }
+            saveData();
+            resetClientForm();
+        }
+
+        function editClient(id) {
+            const c = clients.find(x => x.id === id);
+            if (c) {
+                document.getElementById('client-edit-id').value = c.id;
+                document.getElementById('client-rif').value = c.rif;
+                document.getElementById('client-name').value = c.name;
+                document.getElementById('client-group').value = c.group;
+                document.getElementById('client-phone').value = c.phone;
+                document.getElementById('client-form-title').innerText = 'Editar Cliente';
+            }
+        }
+
+        function deleteClient(id) {
+            if (confirm('¿Eliminar este cliente?')) {
+                clients = clients.filter(x => x.id !== id);
+                saveData();
+            }
+        }
+
+        function resetClientForm() {
+            document.getElementById('client-edit-id').value = '';
+            document.getElementById('client-rif').value = '';
+            document.getElementById('client-name').value = '';
+            document.getElementById('client-group').value = '';
+            document.getElementById('client-phone').value = '';
+            document.getElementById('client-form-title').innerText = 'Nuevo Cliente';
+        }
+
+        function handleClientQuery(clientName) {
+            document.getElementById('query-group').value = '';
+            const container = document.getElementById('query-results');
+            if (!clientName) { container.innerHTML = ''; return; }
+
+            const clientObs = obligations.filter(o => o.clientName === clientName && o.status !== 'Pagado');
+            const total = clientObs.reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
+
+            let html = `
+                <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-slate-100 text-base">${clientName}</span>
+                        <button onclick="downloadImageReceipt('${clientName}', false)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow">Descargar Recibo (Imagen PNG)</button>
+                    </div>
+                    <div class="space-y-2">
+            `;
+            if (clientObs.length === 0) {
+                html += `<p class="text-xs text-slate-400 italic">Sin obligaciones pendientes</p>`;
+            } else {
+                clientObs.forEach(o => {
+                    html += `
+                        <div class="flex justify-between text-slate-300 text-xs border-b border-slate-800 pb-1">
+                            <span>[${o.category}] ${o.taxType} (${o.period}) - Vence: ${formatDate(o.dueDate)}</span>
+                            <strong class="font-mono text-emerald-400">Bs. ${o.amountStr}</strong>
+                        </div>
+                    `;
+                });
+            }
+            html += `
+                    </div>
+                    <div class="text-amber-400 font-bold text-base pt-2 border-t border-slate-800">
+                        TOTAL A PAGAR: Bs. ${formatCurrency(total)}
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function handleGroupQuery(groupName) {
+            document.getElementById('query-client').value = '';
+            const container = document.getElementById('query-results');
+            if (!groupName) { container.innerHTML = ''; return; }
+
+            const groupClients = clients.filter(c => c.group === groupName);
+            let groupGrandTotal = 0;
+            groupClients.forEach(client => {
+                const clientObs = obligations.filter(o => o.clientName === client.name && o.status !== 'Pagado');
+                groupGrandTotal += clientObs.reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
+            });
+
+            let html = `
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                        <div class="text-base font-bold text-emerald-400">Grupo Corporativo: ${groupName}</div>
+                        <button onclick="downloadImageReceipt('${groupName}', true)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow">Descargar Recibo General del Grupo (PNG)</button>
+                    </div>
+            `;
+
+            groupClients.forEach(client => {
+                const clientObs = obligations.filter(o => o.clientName === client.name && o.status !== 'Pagado');
+                const clientTotal = clientObs.reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
+                html += `
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 space-y-2">
+                        <div class="font-semibold text-slate-100">${client.name}</div>
+                `;
+                if (clientObs.length === 0) {
+                    html += `<div class="text-slate-400 italic text-xs">Sin obligaciones pendientes</div>`;
+                } else {
+                    clientObs.forEach(o => {
+                        html += `
+                            <div class="flex justify-between text-slate-300 pl-3 border-l-2 border-slate-700 text-xs">
+                                <span>[${o.category}] ${o.taxType} (${o.period}) - Vence: ${formatDate(o.dueDate)}</span>
+                                <span class="font-mono text-emerald-400 font-bold">Bs. ${o.amountStr}</span>
+                            </div>
+                        `;
+                    });
+                }
+                html += `
+                        <div class="text-right font-bold text-amber-400 pt-2 border-t border-slate-800 text-sm">
+                            Subtotal Empresa: Bs. ${formatCurrency(clientTotal)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                <div class="bg-emerald-950 p-4 rounded-xl border border-emerald-800 text-right font-bold text-emerald-300 text-base">
+                    TOTAL GENERAL DEL GRUPO: Bs. ${formatCurrency(groupGrandTotal)}
+                </div>
+            </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        // GENERADOR DE RECIBOS EN IMAGEN PNG CON SUBTOTALES POR EMPRESA
+        function downloadImageReceipt(name, isGroup = false) {
+            let groupClients = [];
+            let total = 0;
+            let structuredItems = [];
+
+            if (isGroup) {
+                groupClients = clients.filter(c => c.group === name);
+                groupClients.forEach(client => {
+                    const clientObs = obligations.filter(o => o.clientName === client.name && o.status !== 'Pagado');
+                    const clientSubtotal = clientObs.reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
+                    total += clientSubtotal;
+                    structuredItems.push({
+                        clientName: client.name,
+                        obligations: clientObs,
+                        subtotal: clientSubtotal
+                    });
+                });
+            } else {
+                const clientObs = obligations.filter(o => o.clientName === name && o.status !== 'Pagado');
+                total = clientObs.reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
+                structuredItems.push({
+                    clientName: name,
+                    obligations: clientObs,
+                    subtotal: total
+                });
+            }
+
+            let extraHeight = 0;
+            structuredItems.forEach(item => {
+                extraHeight += 35;
+                if (item.obligations.length === 0) extraHeight += 25;
+                else extraHeight += (item.obligations.length * 32);
+                extraHeight += 30;
+            });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 680;
+            canvas.height = 250 + extraHeight + 85;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = '#059669';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(12, 12, canvas.width - 24, canvas.height - 24);
+
+            ctx.fillStyle = '#34d399';
+            ctx.font = 'bold 22px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('LEGAL Y CONTABLE, A.C.', canvas.width / 2, 55);
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('Control Tributario y Parafiscal', canvas.width / 2, 78);
+
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(35, 95);
+            ctx.lineTo(canvas.width - 35, 95);
+            ctx.stroke();
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(`${isGroup ? 'Grupo Corporativo:' : 'Cliente:'} ${name}`, 35, 125);
+
+            ctx.font = '12px sans-serif';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText(`Fecha de Emisión: ${formatDate(new Date().toISOString().split('T')[0])}`, 35, 147);
+
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.fillText('COMPROMISOS PENDIENTES Y VENCIMIENTOS:', 35, 185);
+
+            let startY = 210;
+
+            structuredItems.forEach(item => {
+                ctx.fillStyle = '#34d399';
+                ctx.font = 'bold 13px sans-serif';
+                ctx.fillText(`• Empresa: ${item.clientName}`, 35, startY);
+                startY += 22;
+
+                if (item.obligations.length === 0) {
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '11px italic sans-serif';
+                    ctx.fillText('Sin obligaciones pendientes', 55, startY);
+                    startY += 25;
+                } else {
+                    item.obligations.forEach(o => {
+                        ctx.fillStyle = '#f8fafc';
+                        ctx.font = '12px sans-serif';
+                        ctx.fillText(`[${o.category}] ${o.taxType}`, 55, startY);
+                        startY += 16;
+
+                        ctx.fillStyle = '#94a3b8';
+                        ctx.font = '11px sans-serif';
+                        ctx.fillText(`Periodo: ${o.period}   |   Vencimiento: ${formatDate(o.dueDate)}`, 70, startY);
+
+                        ctx.fillStyle = '#34d399';
+                        ctx.font = 'bold 12px monospace';
+                        ctx.textAlign = 'right';
+                        ctx.fillText(`Bs. ${o.amountStr}`, canvas.width - 50, startY);
+                        ctx.textAlign = 'left';
+
+                        startY += 28;
+                    });
+                }
+
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText(`Subtotal Empresa: Bs. ${formatCurrency(item.subtotal)}`, canvas.width - 50, startY);
+                ctx.textAlign = 'left';
+
+                startY += 32;
+
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(35, startY - 15);
+                ctx.lineTo(canvas.width - 35, startY - 15);
+                ctx.stroke();
+            });
+
+            startY += 5;
+            ctx.fillStyle = '#064e3b';
+            ctx.fillRect(35, startY, canvas.width - 70, 65);
+
+            ctx.fillStyle = '#a7f3d0';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.fillText(isGroup ? 'TOTAL GENERAL DEL GRUPO' : 'TOTAL GENERAL A PAGAR', 55, startY + 26);
+
+            ctx.fillStyle = '#34d399';
+            ctx.font = 'bold 20px monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText(`Bs. ${formatCurrency(total)}`, canvas.width - 55, startY + 42);
+            ctx.textAlign = 'left';
+
+            const link = document.createElement('a');
+            link.download = `Recibo_${name.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function renderAll() {
+            const pendiente = obligations.filter(o => o.status === 'Pendiente' || o.status === 'Vencido').reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
+            document.getElementById('total-pendiente').innerText = 'Bs. ' + formatCurrency(pendiente);
+
+            const obList = document.getElementById('obligations-list');
+            obList.innerHTML = obligations.map(item => `
+                <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-700 flex justify-between items-center text-sm">
+                    <div>
+                        <div class="font-semibold text-slate-100">${item.clientName}</div>
+                        <div class="text-emerald-400 text-xs">[${item.category}] ${item.taxType} - ${item.period} (Vence: ${formatDate(item.dueDate)})</div>
+                        <div class="text-amber-400 font-mono mt-1 font-bold">Bs. ${formatCurrency(item.amountStr)} <span class="text-xs font-normal text-slate-300">[${item.status}]</span></div>
+                    </div>
+                    <button onclick="deleteObligation(${item.id})" class="bg-rose-950 text-rose-400 border border-rose-900 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-rose-900">Borrar</button>
+                </div>
+            `).join('');
+
+            const gList = document.getElementById('groups-list');
+            gList.innerHTML = groups.map(g => `
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 flex justify-between items-center text-sm">
+                    <div>
+                        <span class="font-semibold text-slate-100 text-base">${g.name}</span>
+                        <div class="text-xs text-slate-400 mt-0.5">Empresas asociadas: ${clients.filter(c => c.group === g.name).length}</div>
+                    </div>
+                    <button onclick="deleteGroup(${g.id})" class="bg-rose-950 text-rose-400 border border-rose-900 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-rose-900">Eliminar Grupo</button>
+                </div>
+            `).join('');
+
+            const groupOptions = '<option value="">Sin Grupo</option>' + groups.map(g => `<option value="${g.name}">${g.name}</option>`).join('');
+            document.getElementById('client-group').innerHTML = groupOptions;
+
+            const queryGroupOptions = '<option value="">-- Seleccionar Grupo --</option>' + groups.map(g => `<option value="${g.name}">${g.name}</option>`).join('');
+            document.getElementById('query-group').innerHTML = queryGroupOptions;
+
+            const cList = document.getElementById('clients-list');
+            cList.innerHTML = clients.map(c => `
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 flex justify-between items-center text-sm">
+                    <div>
+                        <div class="font-semibold text-slate-100">${c.name}</div>
+                        <div class="text-emerald-400 text-xs font-mono">${c.rif} | <span class="text-slate-400">${c.group || 'Sin Grupo'}</span></div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="editClient(${c.id})" class="bg-blue-950 text-blue-400 border border-blue-900 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-900">Editar</button>
+                        <button onclick="deleteClient(${c.id})" class="bg-rose-950 text-rose-400 border border-rose-900 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-rose-900">Borrar</button>
+                    </div>
+                </div>
+            `).join('');
+
+            const queryClientOptions = '<option value="">-- Seleccionar Empresa --</option>' + clients.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+            document.getElementById('query-client').value = document.getElementById('query-client').value || '';
+            document.getElementById('query-client').innerHTML = queryClientOptions;
+        }
+
+        updateTaxOptions();
+        loadFromFirebase();
+    </script>
+</body>
+</html>
