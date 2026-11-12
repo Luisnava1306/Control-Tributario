@@ -274,10 +274,10 @@
 
         function verifyPin(e) {
             e.preventDefault();
-            const inputPin = document.getElementById('access-pin').value;
+            const inputElement = document.getElementById('access-pin');
             const errorMsg = document.getElementById('pin-error');
 
-            if (inputPin === PIN_SECRETO) {
+            if (inputElement && inputElement.value.trim() === PIN_SECRETO) {
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.body.classList.remove('justify-center', 'items-center', 'min-h-screen');
                 document.getElementById('main-app').classList.remove('hidden');
@@ -285,7 +285,7 @@
                 loadFromFirebase();
             } else {
                 errorMsg.classList.remove('hidden');
-                document.getElementById('access-pin').value = '';
+                if(inputElement) inputElement.value = '';
             }
         }
 
@@ -293,7 +293,8 @@
             document.getElementById('main-app').classList.add('hidden');
             document.body.classList.add('justify-center', 'items-center', 'min-h-screen');
             document.getElementById('auth-screen').classList.remove('hidden');
-            document.getElementById('access-pin').value = '';
+            const inputElement = document.getElementById('access-pin');
+            if(inputElement) inputElement.value = '';
             document.getElementById('pin-error').classList.add('hidden');
         }
 
@@ -301,5 +302,4 @@
             try {
                 const res = await fetch(`${FIREBASE_URL}/data.json`);
                 if (res.ok) {
-                    const remoteData = await res.json();
-                    if (remoteData) {
+        
