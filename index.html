@@ -214,21 +214,25 @@
         let clients = [];
         let obligations = [];
 
-        // CONTROL DE PESTAÑAS GLOBAL INDEPENDIENTE
-        function switchTab(tab) {
+        // FUNCIÓN DE CAMBIO DE PESTAÑAS BLINDADA Y EXPLÍCITA
+        function switchTab(tabName) {
             const tabs = ['dashboard', 'groups', 'directory', 'consult'];
             tabs.forEach(t => {
                 const pane = document.getElementById('tab-' + t);
                 const btn = document.getElementById('btn-' + t);
+                
                 if (pane) {
-                    if (t === tab) {
+                    if (t === tabName) {
+                        pane.style.display = 'grid'; // Forzar visualización directa por estilo inline
                         pane.classList.remove('hidden');
                     } else {
+                        pane.style.display = 'none'; // Forzar ocultamiento absoluto
                         pane.classList.add('hidden');
                     }
                 }
+                
                 if (btn) {
-                    if (t === tab) {
+                    if (t === tabName) {
                         btn.className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-emerald-600 text-white shadow";
                     } else {
                         btn.className = "px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300";
@@ -347,13 +351,4 @@
             if (confirm('¿Eliminar este grupo?')) {
                 db.ref('groups/' + id).remove();
                 clients.forEach(c => { 
-                    if (c.group === groupName) {
-                        db.ref('clients/' + c.id).update({ group: '' });
-                    }
-                });
-            }
-        }
-
-        function saveClient(e) {
-            e.preventDefault();
-            const id
+                    if (c.grou
