@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Legal y Contable, A.C. - Control Tributario</title>
+    <title>Legal y Contable, S.C. - Control Tributario</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans p-4 min-h-screen flex flex-col justify-center items-center">
@@ -11,7 +11,7 @@
     <!-- PANTALLA DE LOGIN / CONTRASEÑA -->
     <div id="auth-screen" class="w-full max-w-sm bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl space-y-4">
         <div class="text-center space-y-1">
-            <h1 class="text-lg font-bold text-emerald-400">Legal y Contable, A.C.</h1>
+            <h1 class="text-lg font-bold text-emerald-400">Legal y Contable, S.C.</h1>
             <p class="text-xs text-slate-400">Ingrese su Contraseña de Acceso</p>
         </div>
         <form onsubmit="verifyPin(event)" class="space-y-3">
@@ -28,7 +28,7 @@
         <!-- HEADER -->
         <header class="bg-slate-800 border border-slate-700 p-5 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-                <h1 class="text-xl font-bold text-emerald-400">Legal y Contable, A.C.</h1>
+                <h1 class="text-xl font-bold text-emerald-400">Legal y Contable, S.C.</h1>
                 <p class="text-xs text-slate-400">Control Tributario y Parafiscal (Sincronizado en la Nube)</p>
             </div>
             <div class="flex items-center gap-3">
@@ -43,11 +43,11 @@
             </div>
         </header>
 
-        <!-- TOTAL PENDIENTE GLOBAL -->
-        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex justify-between items-center">
+        <!-- AVISO DE ALERTA: PRÓXIMOS A VENCER (2 DÍAS) O VENCIDOS -->
+        <div id="alert-card" class="bg-rose-950/60 p-4 rounded-xl border border-rose-800/80 shadow flex justify-between items-center">
             <div>
-                <span class="text-xs text-slate-400 uppercase tracking-wider">Total General Pendiente / Vencido</span>
-                <h3 id="total-pendiente" class="text-2xl font-bold text-amber-400 mt-1">Bs. 0,00</h3>
+                <span id="alert-title" class="text-xs text-rose-300 uppercase tracking-wider font-semibold">⚠️ Alerta: Vencidos o por vencer (&lt;= 2 días)</span>
+                <h3 id="total-alerta" class="text-2xl font-bold text-rose-400 mt-1">Bs. 0,00</h3>
             </div>
             <div id="sync-status" class="text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1.5 rounded-lg">
                 ☁️ Sincronizado con Firebase
@@ -59,8 +59,9 @@
             <!-- 1. DASHBOARD / REGISTRO -->
             <div id="tab-dashboard" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow h-fit">
-                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Registrar Obligación</h3>
+                    <h3 id="obligation-form-title" class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Registrar Obligación</h3>
                     <form onsubmit="saveObligation(event)" class="space-y-3 text-sm">
+                        <input type="hidden" id="obligation-edit-id" />
                         <div>
                             <label class="text-xs text-slate-400 mb-1 block">RIF del Cliente (Autocompleta)</label>
                             <input type="text" id="ob-rif" oninput="autofillClient(this.value)" placeholder="Ej: J-12345678-9" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
@@ -106,24 +107,28 @@
                         </div>
                         <div>
                             <label class="text-xs text-slate-400 mb-1 block">Monto (Bs.) *</label>
-                            <input type="text" id="ob-amount" required placeholder="Ej: 1.985,36" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 font-mono" />
+                            <input type="text" id="ob-amount" required placeholder="Ej: 1985,36 o 198536" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 font-mono" />
                         </div>
                         <div>
                             <label class="text-xs text-slate-400 mb-1 block">Estado</label>
                             <select id="ob-status" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100">
-                                <option>Pendiente</option>
-                                <option>En Proceso</option>
+                                <option>Por pagar</option>
+                                <option>Enviado al cliente</option>
                                 <option>Pagado</option>
                                 <option>Vencido</option>
                             </select>
                         </div>
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl transition shadow mt-2">Guardar Obligación</button>
+                        <div class="flex gap-2 pt-2">
+                            <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 rounded-xl transition shadow text-xs">Guardar Obligación</button>
+                            <button type="button" onclick="resetObligationForm()" class="bg-slate-700 px-3 py-2 rounded-xl text-xs">Cancelar</button>
+                        </div>
                     </form>
                 </div>
 
-                <div class="lg:col-span-2 bg-slate-800 p-5 rounded-xl border border-slate-700 shadow">
-                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Registros Recientes</h3>
-                    <div id="obligations-list" class="space-y-3"></div>
+                <!-- REGISTROS RECIENTES AGRUPADOS POR EMPRESA -->
+                <div class="lg:col-span-2 bg-slate-800 p-5 rounded-xl border border-slate-700 shadow space-y-4">
+                    <h3 class="text-sm font-semibold mb-2 text-slate-200 border-b border-slate-700 pb-2">Registros Recientes (Agrupados por Empresa)</h3>
+                    <div id="obligations-grouped-list" class="space-y-3"></div>
                 </div>
             </div>
 
@@ -268,8 +273,8 @@
         ];
 
         let obligations = JSON.parse(localStorage.getItem('lc_obligations_native')) || [
-            { id: 1, clientName: 'Comercial El Carmen, C.A.', rif: 'J-12345678-9', group: 'Grupo Empresarial Zulia', category: 'Impuestos Nacionales (SENIAT)', taxType: 'IVA - Impuesto al Valor Agregado', period: 'Noviembre 2026', dueDate: '2026-11-18', amountStr: '1.985,36', status: 'Pendiente' },
-            { id: 2, clientName: 'Comercial El Carmen, C.A.', rif: 'J-12345678-9', group: 'Grupo Empresarial Zulia', category: 'Impuestos Nacionales (SENIAT)', taxType: 'IVA - Impuesto al Valor Agregado', period: 'Diciembre 2026', dueDate: '2026-12-18', amountStr: '1.985,36', status: 'Pendiente' }
+            { id: 1, clientName: 'Comercial El Carmen, C.A.', rif: 'J-12345678-9', group: 'Grupo Empresarial Zulia', category: 'Impuestos Nacionales (SENIAT)', taxType: 'IVA - Impuesto al Valor Agregado', period: 'Noviembre 2026', dueDate: '2026-11-18', amountStr: '1.985,36', status: 'Por pagar' },
+            { id: 2, clientName: 'Comercial El Carmen, C.A.', rif: 'J-12345678-9', group: 'Grupo Empresarial Zulia', category: 'Impuestos Nacionales (SENIAT)', taxType: 'IVA - Impuesto al Valor Agregado', period: 'Diciembre 2026', dueDate: '2026-12-18', amountStr: '1.985,36', status: 'Por pagar' }
         ];
 
         function verifyPin(e) {
@@ -373,6 +378,12 @@
             return num.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
+        // AUTO-FORMATEAR MONTO AL INGRESARLO (SIGNOS DE MILES AUTOMÁTICOS)
+        function cleanAndFormatAmountInput(rawVal) {
+            const num = parseToNumber(rawVal);
+            return formatCurrency(num);
+        }
+
         function switchTab(tab) {
             ['dashboard', 'groups', 'directory', 'consult', 'periods'].forEach(t => {
                 const tabEl = document.getElementById('tab-' + t);
@@ -408,20 +419,64 @@
 
         function saveObligation(e) {
             e.preventDefault();
-            const newOb = {
-                id: Date.now(),
-                rif: document.getElementById('ob-rif').value || 'S/N',
-                clientName: document.getElementById('ob-client').value,
-                category: document.getElementById('ob-category').value,
-                taxType: document.getElementById('ob-tax').value,
-                period: document.getElementById('ob-period').value,
-                dueDate: document.getElementById('ob-duedate').value,
-                amountStr: document.getElementById('ob-amount').value,
-                status: document.getElementById('ob-status').value
-            };
-            obligations.unshift(newOb);
+            const editId = document.getElementById('obligation-edit-id').value;
+            const rawAmount = document.getElementById('ob-amount').value;
+            const formattedAmount = cleanAndFormatAmountInput(rawAmount);
+
+            if (editId) {
+                obligations = obligations.map(o => o.id == editId ? {
+                    ...o,
+                    rif: document.getElementById('ob-rif').value || 'S/N',
+                    clientName: document.getElementById('ob-client').value,
+                    category: document.getElementById('ob-category').value,
+                    taxType: document.getElementById('ob-tax').value,
+                    period: document.getElementById('ob-period').value,
+                    dueDate: document.getElementById('ob-duedate').value,
+                    amountStr: formattedAmount,
+                    status: document.getElementById('ob-status').value
+                } : o);
+            } else {
+                const newOb = {
+                    id: Date.now(),
+                    rif: document.getElementById('ob-rif').value || 'S/N',
+                    clientName: document.getElementById('ob-client').value,
+                    category: document.getElementById('ob-category').value,
+                    taxType: document.getElementById('ob-tax').value,
+                    period: document.getElementById('ob-period').value,
+                    dueDate: document.getElementById('ob-duedate').value,
+                    amountStr: formattedAmount,
+                    status: document.getElementById('ob-status').value
+                };
+                obligations.unshift(newOb);
+            }
             saveData();
-            e.target.reset();
+            resetObligationForm();
+        }
+
+        function editObligation(id) {
+            const o = obligations.find(x => x.id === id);
+            if (o) {
+                document.getElementById('obligation-edit-id').value = o.id;
+                document.getElementById('ob-rif').value = o.rif;
+                document.getElementById('ob-client').value = o.clientName;
+                document.getElementById('ob-category').value = o.category;
+                updateTaxOptions();
+                document.getElementById('ob-tax').value = o.taxType;
+                document.getElementById('ob-period').value = o.period;
+                document.getElementById('ob-duedate').value = o.dueDate;
+                document.getElementById('ob-amount').value = o.amountStr;
+                document.getElementById('ob-status').value = o.status;
+                document.getElementById('obligation-form-title').innerText = 'Editar Obligación';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function resetObligationForm() {
+            document.getElementById('obligation-edit-id').value = '';
+            document.getElementById('ob-rif').value = '';
+            document.getElementById('ob-client').value = '';
+            document.getElementById('ob-amount').value = '';
+            document.getElementById('obligation-form-title').innerText = 'Registrar Obligación';
             updateTaxOptions();
         }
 
@@ -649,15 +704,19 @@
                     total += clientSubtotal;
                     structuredItems.push({
                         clientName: client.name,
+                        clientRif: client.rif || 'J-S/N',
                         obligations: clientObs,
                         subtotal: clientSubtotal
                     });
                 });
             } else {
+                const clientObj = clients.find(c => c.name === name);
+                const clientRif = clientObj ? clientObj.rif : (obligations.find(o => o.clientName === name)?.rif || 'J-S/N');
                 const clientObs = obligations.filter(o => o.clientName === name && o.status !== 'Pagado');
                 total = clientObs.reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
                 structuredItems.push({
                     clientName: name,
+                    clientRif: clientRif,
                     obligations: clientObs,
                     subtotal: total
                 });
@@ -686,7 +745,7 @@
             ctx.fillStyle = '#34d399';
             ctx.font = 'bold 22px sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('LEGAL Y CONTABLE, A.C.', canvas.width / 2, 55);
+            ctx.fillText('LEGAL Y CONTABLE, S.C.', canvas.width / 2, 55);
 
             ctx.fillStyle = '#94a3b8';
             ctx.font = '12px sans-serif';
@@ -704,20 +763,26 @@
             ctx.textAlign = 'left';
             ctx.fillText(`${isGroup ? 'Grupo Corporativo:' : 'Cliente:'} ${name}`, 35, 125);
 
+            if (!isGroup && structuredItems[0].clientRif) {
+                ctx.fillStyle = '#34d399';
+                ctx.font = '12px monospace';
+                ctx.fillText(`RIF: ${structuredItems[0].clientRif}`, 35, 145);
+            }
+
             ctx.font = '12px sans-serif';
             ctx.fillStyle = '#94a3b8';
-            ctx.fillText(`Fecha de Emisión: ${formatDate(new Date().toISOString().split('T')[0])}`, 35, 147);
+            ctx.fillText(`Fecha de Emisión: ${formatDate(new Date().toISOString().split('T')[0])}`, 35, isGroup ? 147 : 167);
 
             ctx.fillStyle = '#cbd5e1';
             ctx.font = 'bold 11px sans-serif';
-            ctx.fillText('COMPROMISOS PENDIENTES Y VENCIMIENTOS:', 35, 185);
+            ctx.fillText('COMPROMISOS PENDIENTES Y VENCIMIENTOS:', 35, isGroup ? 185 : 200);
 
-            let startY = 210;
+            let startY = isGroup ? 210 : 225;
 
             structuredItems.forEach(item => {
                 ctx.fillStyle = '#34d399';
                 ctx.font = 'bold 13px sans-serif';
-                ctx.fillText(`• Empresa: ${item.clientName}`, 35, startY);
+                ctx.fillText(`• Empresa: ${item.clientName} (${item.clientRif})`, 35, startY);
                 startY += 22;
 
                 if (item.obligations.length === 0) {
@@ -783,22 +848,72 @@
         }
 
         function renderAll() {
-            const pendiente = obligations.filter(o => o.status === 'Pendiente' || o.status === 'Vencido').reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
-            const totalPendienteEl = document.getElementById('total-pendiente');
-            if(totalPendienteEl) totalPendienteEl.innerText = 'Bs. ' + formatCurrency(pendiente);
+            // CÁLCULO DE ALERTA: VENCIDOS O PRÓXIMOS A VENCER (<= 2 DÍAS)
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const limitDate = new Date();
+            limitDate.setDate(today.getDate() + 2);
 
-            const obList = document.getElementById('obligations-list');
-            if(obList) {
-                obList.innerHTML = obligations.map(item => `
-                    <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-700 flex justify-between items-center text-sm">
-                        <div>
-                            <div class="font-semibold text-slate-100">${item.clientName}</div>
-                            <div class="text-emerald-400 text-xs">[${item.category}] ${item.taxType} - ${item.period} (Vence: ${formatDate(item.dueDate)})</div>
-                            <div class="text-amber-400 font-mono mt-1 font-bold">Bs. ${formatCurrency(item.amountStr)} <span class="text-xs font-normal text-slate-300">[${item.status}]</span></div>
-                        </div>
-                        <button onclick="deleteObligation(${item.id})" class="bg-rose-950 text-rose-400 border border-rose-900 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-rose-900">Borrar</button>
-                    </div>
-                `).join('');
+            let alertaTotal = 0;
+            obligations.forEach(o => {
+                if (o.status !== 'Pagado' && o.dueDate) {
+                    const due = new Date(o.dueDate + 'T00:00:00');
+                    if (due <= limitDate) {
+                        alertaTotal += parseToNumber(o.amountStr);
+                    }
+                }
+            });
+
+            const totalAlertaEl = document.getElementById('total-alerta');
+            if(totalAlertaEl) totalAlertaEl.innerText = 'Bs. ' + formatCurrency(alertaTotal);
+
+            // RENDERIZAR REGISTROS RECIENTES AGRUPADOS POR EMPRESA (DESPLEGABLES / ACORDEÓN)
+            const groupedListEl = document.getElementById('obligations-grouped-list');
+            if(groupedListEl) {
+                // Agrupar obligaciones por cliente
+                const mapByClient = {};
+                obligations.forEach(item => {
+                    if(!mapByClient[item.clientName]) {
+                        mapByClient[item.clientName] = [];
+                    }
+                    mapByClient[item.clientName].push(item);
+                });
+
+                let groupHtml = '';
+                for(const [clientName, items] of Object.entries(mapByClient)) {
+                    groupHtml += `
+                        <details class="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden group">
+                            <summary class="p-3.5 bg-slate-900 hover:bg-slate-800/80 cursor-pointer flex justify-between items-center text-sm font-semibold select-none">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-emerald-400">🏢</span>
+                                    <span class="text-slate-100">${clientName}</span>
+                                    <span class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700">${items.length} registro(s)</span>
+                                </div>
+                                <span class="text-xs text-slate-400 group-open:rotate-180 transition">▼ Ver detalles</span>
+                            </summary>
+                            <div class="p-3 bg-slate-950/50 border-t border-slate-800 space-y-2">
+                    `;
+                    items.forEach(item => {
+                        groupHtml += `
+                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 flex justify-between items-center text-xs">
+                                <div>
+                                    <div class="text-emerald-400 font-semibold">[${item.category}] ${item.taxType}</div>
+                                    <div class="text-slate-400">Periodo: ${item.period} | Vence: ${formatDate(item.dueDate)}</div>
+                                    <div class="text-amber-400 font-mono mt-0.5 font-bold">Bs. ${item.amountStr} <span class="text-slate-400 font-normal">[${item.status}]</span></div>
+                                </div>
+                                <div class="flex gap-1.5">
+                                    <button onclick="editObligation(${item.id})" class="bg-blue-950 text-blue-400 border border-blue-900 px-2.5 py-1 rounded text-[11px] hover:bg-blue-900">Editar</button>
+                                    <button onclick="deleteObligation(${item.id})" class="bg-rose-950 text-rose-400 border border-rose-900 px-2.5 py-1 rounded text-[11px] hover:bg-rose-900">Borrar</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    groupHtml += `
+                            </div>
+                        </details>
+                    `;
+                }
+                groupedListEl.innerHTML = groupHtml || '<p class="text-xs text-slate-400 italic">No hay registros recientes.</p>';
             }
 
             const gList = document.getElementById('groups-list');
