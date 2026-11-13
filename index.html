@@ -12,7 +12,7 @@
     <div id="auth-screen" class="w-full max-w-sm bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl space-y-4">
         <div class="text-center space-y-1">
             <h1 class="text-lg font-bold text-emerald-400">Legal y Contable, S.C.</h1>
-            <p class="text-xs text-slate-400">Ingrese su Contraseña de Acceso</p>
+            <p class="text-xs text-slate-400">Ingrese su contraseña de acceso</p>
         </div>
         <form onsubmit="verifyPin(event)" class="space-y-3">
             <div>
@@ -37,17 +37,18 @@
                     <button onclick="switchTab('groups')" id="btn-groups" class="px-3 py-2 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Grupos</button>
                     <button onclick="switchTab('directory')" id="btn-directory" class="px-3 py-2 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Clientes</button>
                     <button onclick="switchTab('consult')" id="btn-consult" class="px-3 py-2 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Recibos</button>
-                    <button onclick="switchTab('periods')" id="btn-periods" class="px-3 py-2 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Filtro por Mes</button>
+                    <button onclick="switchTab('periods')" id="btn-periods" class="px-3 py-2 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Filtro Mes</button>
+                    <button onclick="switchTab('alerts')" id="btn-alerts" class="px-3 py-2 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">⚠️ Alertas</button>
                 </nav>
                 <button onclick="lockSystem()" title="Bloquear sistema" class="bg-slate-700 hover:bg-rose-950 hover:text-rose-400 text-slate-300 p-2.5 rounded-xl transition">🔒</button>
             </div>
         </header>
 
-        <!-- AVISO DE ALERTA: PRÓXIMOS A VENCER (2 DÍAS) O VENCIDOS -->
-        <div id="alert-card" class="bg-rose-950/60 p-4 rounded-xl border border-rose-800/80 shadow flex justify-between items-center">
+        <!-- AVISO DE ALERTA DINÁMICO -->
+        <div id="alert-card" class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex justify-between items-center">
             <div>
-                <span id="alert-title" class="text-xs text-rose-300 uppercase tracking-wider font-semibold">⚠️ Alerta: Vencidos o por vencer (&lt;= 2 días)</span>
-                <h3 id="total-alerta" class="text-2xl font-bold text-rose-400 mt-1">Bs. 0,00</h3>
+                <span id="alert-title" class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Estado de obligaciones</span>
+                <h3 id="total-alerta" class="text-2xl font-bold text-slate-100 mt-1">Sin alertas pendientes</h3>
             </div>
             <div id="sync-status" class="text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1.5 rounded-lg">
                 ☁️ Sincronizado con Firebase
@@ -63,12 +64,12 @@
                     <form onsubmit="saveObligation(event)" class="space-y-3 text-sm">
                         <input type="hidden" id="obligation-edit-id" />
                         <div>
-                            <label class="text-xs text-slate-400 mb-1 block">RIF del Cliente (Autocompleta)</label>
+                            <label class="text-xs text-slate-400 mb-1 block">RIF del cliente (Autocompleta)</label>
                             <input type="text" id="ob-rif" oninput="autofillClient(this.value)" placeholder="Ej: J-12345678-9" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
                         </div>
                         <div>
-                            <label class="text-xs text-slate-400 mb-1 block">Razón Social *</label>
-                            <input type="text" id="ob-client" required placeholder="Nombre empresa" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                            <label class="text-xs text-slate-400 mb-1 block">Razón social *</label>
+                            <input type="text" id="ob-client" required placeholder="Nombre de la empresa" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
                         </div>
                         <div>
                             <label class="text-xs text-slate-400 mb-1 block">Categoría</label>
@@ -119,7 +120,7 @@
                             </select>
                         </div>
                         <div class="flex gap-2 pt-2">
-                            <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 rounded-xl transition shadow text-xs">Guardar Obligación</button>
+                            <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 rounded-xl transition shadow text-xs">Guardar obligación</button>
                             <button type="button" onclick="resetObligationForm()" class="bg-slate-700 px-3 py-2 rounded-xl text-xs">Cancelar</button>
                         </div>
                     </form>
@@ -127,7 +128,7 @@
 
                 <!-- REGISTROS RECIENTES AGRUPADOS POR EMPRESA -->
                 <div class="lg:col-span-2 bg-slate-800 p-5 rounded-xl border border-slate-700 shadow space-y-4">
-                    <h3 class="text-sm font-semibold mb-2 text-slate-200 border-b border-slate-700 pb-2">Registros Recientes (Agrupados por Empresa)</h3>
+                    <h3 class="text-sm font-semibold mb-2 text-slate-200 border-b border-slate-700 pb-2">Registros recientes (Agrupados por empresa)</h3>
                     <div id="obligations-grouped-list" class="space-y-3"></div>
                 </div>
             </div>
@@ -135,17 +136,17 @@
             <!-- 2. GRUPOS -->
             <div id="tab-groups" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow h-fit">
-                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Nuevo Grupo de Empresas</h3>
+                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Nuevo grupo de empresas</h3>
                     <form onsubmit="saveGroup(event)" class="space-y-3 text-sm">
                         <div>
-                            <label class="text-xs text-slate-400 mb-1 block">Nombre del Grupo *</label>
+                            <label class="text-xs text-slate-400 mb-1 block">Nombre del grupo *</label>
                             <input type="text" id="group-name" required placeholder="Ej: Grupo Empresarial Zulia" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
                         </div>
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl transition shadow">Guardar Grupo</button>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl transition shadow">Guardar grupo</button>
                     </form>
                 </div>
                 <div class="md:col-span-2 bg-slate-800 p-5 rounded-xl border border-slate-700 shadow space-y-3">
-                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Grupos Registrados</h3>
+                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Grupos registrados</h3>
                     <div id="groups-list" class="space-y-2"></div>
                 </div>
             </div>
@@ -153,7 +154,7 @@
             <!-- 3. CLIENTES -->
             <div id="tab-directory" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow h-fit">
-                    <h3 id="client-form-title" class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Nuevo Cliente</h3>
+                    <h3 id="client-form-title" class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Nuevo cliente</h3>
                     <form onsubmit="saveClient(event)" class="space-y-3 text-sm">
                         <input type="hidden" id="client-edit-id" />
                         <div>
@@ -161,13 +162,13 @@
                             <input type="text" id="client-rif" required placeholder="J-12345678-9" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
                         </div>
                         <div>
-                            <label class="text-xs text-slate-400 mb-1 block">Razón Social *</label>
-                            <input type="text" id="client-name" required placeholder="Nombre empresa" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                            <label class="text-xs text-slate-400 mb-1 block">Razón social *</label>
+                            <input type="text" id="client-name" required placeholder="Nombre de la empresa" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
                         </div>
                         <div>
-                            <label class="text-xs text-slate-400 mb-1 block">Grupo de Empresas</label>
+                            <label class="text-xs text-slate-400 mb-1 block">Grupo de empresas</label>
                             <select id="client-group" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100">
-                                <option value="">Sin Grupo</option>
+                                <option value="">Sin grupo</option>
                             </select>
                         </div>
                         <div>
@@ -181,7 +182,7 @@
                     </form>
                 </div>
                 <div class="md:col-span-2 bg-slate-800 p-5 rounded-xl border border-slate-700 shadow space-y-3">
-                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Directorio Activo de Clientes</h3>
+                    <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Directorio activo de clientes</h3>
                     <div id="clients-list" class="space-y-2"></div>
                 </div>
             </div>
@@ -190,15 +191,15 @@
             <div id="tab-consult" class="hidden bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-700 pb-4">
                     <div>
-                        <label class="text-xs text-slate-400 mb-1 block">Consultar por Grupo de Empresas</label>
+                        <label class="text-xs text-slate-400 mb-1 block">Consultar por grupo de empresas</label>
                         <select id="query-group" onchange="handleGroupQuery(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 text-sm">
-                            <option value="">-- Seleccionar Grupo --</option>
+                            <option value="">-- Seleccionar grupo --</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs text-slate-400 mb-1 block">O Consultar Empresa Específica</label>
+                        <label class="text-xs text-slate-400 mb-1 block">O consultar empresa específica</label>
                         <select id="query-client" onchange="handleClientQuery(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 text-sm">
-                            <option value="">-- Seleccionar Empresa --</option>
+                            <option value="">-- Seleccionar empresa --</option>
                         </select>
                     </div>
                 </div>
@@ -208,9 +209,9 @@
             <!-- 5. CONSULTAS POR PERIODO / MES -->
             <div id="tab-periods" class="hidden bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow space-y-6">
                 <div class="border-b border-slate-700 pb-4 max-w-sm">
-                    <label class="text-xs text-slate-400 mb-1 block">Seleccionar Periodo (Mes)</label>
+                    <label class="text-xs text-slate-400 mb-1 block">Seleccionar periodo (Mes)</label>
                     <select id="filter-period" onchange="handlePeriodQuery(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 text-sm">
-                        <option value="">-- Seleccionar Mes --</option>
+                        <option value="">-- Seleccionar mes --</option>
                         <option>Enero 2026</option>
                         <option>Febrero 2026</option>
                         <option>Marzo 2026</option>
@@ -226,6 +227,17 @@
                     </select>
                 </div>
                 <div id="period-results" class="space-y-3"></div>
+            </div>
+
+            <!-- 6. PESTAÑA DE ALERTAS Y VENCIDOS -->
+            <div id="tab-alerts" class="hidden bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow space-y-6">
+                <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-base font-bold text-rose-400">Clientes con saldos vencidos o próximos a vencer</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Listado detallado de compromisos críticos (vencidos o a 2 días de vencer)</p>
+                    </div>
+                </div>
+                <div id="alerts-results" class="space-y-3"></div>
             </div>
         </main>
     </div>
@@ -378,14 +390,13 @@
             return num.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        // AUTO-FORMATEAR MONTO AL INGRESARLO (SIGNOS DE MILES AUTOMÁTICOS)
         function cleanAndFormatAmountInput(rawVal) {
             const num = parseToNumber(rawVal);
             return formatCurrency(num);
         }
 
         function switchTab(tab) {
-            ['dashboard', 'groups', 'directory', 'consult', 'periods'].forEach(t => {
+            ['dashboard', 'groups', 'directory', 'consult', 'periods', 'alerts'].forEach(t => {
                 const tabEl = document.getElementById('tab-' + t);
                 const btnEl = document.getElementById('btn-' + t);
                 if(tabEl) tabEl.classList.add('hidden');
@@ -848,29 +859,85 @@
         }
 
         function renderAll() {
-            // CÁLCULO DE ALERTA: VENCIDOS O PRÓXIMOS A VENCER (<= 2 DÍAS)
             const today = new Date();
             today.setHours(0,0,0,0);
             const limitDate = new Date();
             limitDate.setDate(today.getDate() + 2);
 
-            let alertaTotal = 0;
+            let hasVencidos = false;
+            let hasPorVencer = false;
+            let alertItems = [];
+
             obligations.forEach(o => {
                 if (o.status !== 'Pagado' && o.dueDate) {
                     const due = new Date(o.dueDate + 'T00:00:00');
-                    if (due <= limitDate) {
-                        alertaTotal += parseToNumber(o.amountStr);
+                    if (due < today) {
+                        hasVencidos = true;
+                        alertItems.push({ ...o, alertType: 'Vencido' });
+                    } else if (due <= limitDate) {
+                        hasPorVencer = true;
+                        alertItems.push({ ...o, alertType: 'Por Vencer' });
                     }
                 }
             });
 
+            const alertCard = document.getElementById('alert-card');
+            const alertTitle = document.getElementById('alert-title');
             const totalAlertaEl = document.getElementById('total-alerta');
-            if(totalAlertaEl) totalAlertaEl.innerText = 'Bs. ' + formatCurrency(alertaTotal);
 
-            // RENDERIZAR REGISTROS RECIENTES AGRUPADOS POR EMPRESA (DESPLEGABLES / ACORDEÓN)
+            if (alertCard && alertTitle && totalAlertaEl) {
+                if (hasVencidos) {
+                    alertCard.className = "bg-rose-950/70 p-4 rounded-xl border border-rose-800 shadow flex justify-between items-center";
+                    alertTitle.className = "text-xs text-rose-300 uppercase tracking-wider font-semibold";
+                    alertTitle.innerText = "⚠️ Atención requerida";
+                    totalAlertaEl.className = "text-xl font-bold text-rose-400 mt-1";
+                    totalAlertaEl.innerText = "Existen saldos vencidos";
+                } else if (hasPorVencer) {
+                    alertCard.className = "bg-amber-950/70 p-4 rounded-xl border border-amber-800 shadow flex justify-between items-center";
+                    alertTitle.className = "text-xs text-amber-300 uppercase tracking-wider font-semibold";
+                    alertTitle.innerText = "⚡ Aviso de vencimiento";
+                    totalAlertaEl.className = "text-xl font-bold text-amber-400 mt-1";
+                    totalAlertaEl.innerText = "Existen saldos por vencer";
+                } else {
+                    alertCard.className = "bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex justify-between items-center";
+                    alertTitle.className = "text-xs text-slate-400 uppercase tracking-wider font-semibold";
+                    alertTitle.innerText = "Estado de obligaciones";
+                    totalAlertaEl.className = "text-xl font-bold text-emerald-400 mt-1";
+                    totalAlertaEl.innerText = "Sin alertas pendientes";
+                }
+            }
+
+            const alertsResultsEl = document.getElementById('alerts-results');
+            if (alertsResultsEl) {
+                if (alertItems.length === 0) {
+                    alertsResultsEl.innerHTML = `<div class="bg-slate-900 p-4 rounded-xl border border-slate-700 text-slate-400 text-xs italic">No hay clientes con saldos vencidos ni próximos a vencer en este momento. ¡Todo en orden!</div>`;
+                } else {
+                    let alertsHtml = '';
+                    alertItems.forEach(item => {
+                        const badgeColor = item.alertType === 'Vencido' ? 'bg-rose-950 text-rose-400 border-rose-800' : 'bg-amber-950 text-amber-400 border-amber-800';
+                        alertsHtml += `
+                            <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 flex justify-between items-center text-sm">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <strong class="text-slate-100 text-base">${item.clientName}</strong>
+                                        <span class="text-[10px] px-2 py-0.5 rounded border ${badgeColor} font-semibold">${item.alertType}</span>
+                                    </div>
+                                    <div class="text-emerald-400 text-xs mt-1">[${item.category}] ${item.taxType} - Periodo: ${item.period}</div>
+                                    <div class="text-xs text-slate-400 mt-0.5">Vencimiento: ${formatDate(item.dueDate)} | Estado actual: <span class="text-slate-200">${item.status}</span></div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="font-mono text-amber-400 font-bold text-base block">Bs. ${item.amountStr}</span>
+                                    <button onclick="editObligation(${item.id})" class="mt-2 bg-blue-950 text-blue-400 border border-blue-900 px-3 py-1 rounded text-xs hover:bg-blue-900">Editar</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    alertsResultsEl.innerHTML = alertsHtml;
+                }
+            }
+
             const groupedListEl = document.getElementById('obligations-grouped-list');
             if(groupedListEl) {
-                // Agrupar obligaciones por cliente
                 const mapByClient = {};
                 obligations.forEach(item => {
                     if(!mapByClient[item.clientName]) {
@@ -924,16 +991,16 @@
                             <span class="font-semibold text-slate-100 text-base">${g.name}</span>
                             <div class="text-xs text-slate-400 mt-0.5">Empresas asociadas: ${clients.filter(c => c.group === g.name).length}</div>
                         </div>
-                        <button onclick="deleteGroup(${g.id})" class="bg-rose-950 text-rose-400 border border-rose-900 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-rose-900">Eliminar Grupo</button>
+                        <button onclick="deleteGroup(${g.id})" class="bg-rose-950 text-rose-400 border border-rose-900 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-rose-900">Eliminar grupo</button>
                     </div>
                 `).join('');
             }
 
-            const groupOptions = '<option value="">Sin Grupo</option>' + groups.map(g => `<option value="${g.name}">${g.name}</option>`).join('');
+            const groupOptions = '<option value="">Sin grupo</option>' + groups.map(g => `<option value="${g.name}">${g.name}</option>`).join('');
             const clientGroupEl = document.getElementById('client-group');
             if(clientGroupEl) clientGroupEl.innerHTML = groupOptions;
 
-            const queryGroupOptions = '<option value="">-- Seleccionar Grupo --</option>' + groups.map(g => `<option value="${g.name}">${g.name}</option>`).join('');
+            const queryGroupOptions = '<option value="">-- Seleccionar grupo --</option>' + groups.map(g => `<option value="${g.name}">${g.name}</option>`).join('');
             const queryGroupEl = document.getElementById('query-group');
             if(queryGroupEl) queryGroupEl.innerHTML = queryGroupOptions;
 
@@ -943,7 +1010,7 @@
                     <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 flex justify-between items-center text-sm">
                         <div>
                             <div class="font-semibold text-slate-100">${c.name}</div>
-                            <div class="text-emerald-400 text-xs font-mono">${c.rif} | <span class="text-slate-400">${c.group || 'Sin Grupo'}</span></div>
+                            <div class="text-emerald-400 text-xs font-mono">${c.rif} | <span class="text-slate-400">${c.group || 'Sin grupo'}</span></div>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="editClient(${c.id})" class="bg-blue-950 text-blue-400 border border-blue-900 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-900">Editar</button>
@@ -953,7 +1020,7 @@
                 `).join('');
             }
 
-            const queryClientOptions = '<option value="">-- Seleccionar Empresa --</option>' + clients.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+            const queryClientOptions = '<option value="">-- Seleccionar empresa --</option>' + clients.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
             const queryClientEl = document.getElementById('query-client');
             if(queryClientEl) {
                 queryClientEl.value = queryClientEl.value || '';
