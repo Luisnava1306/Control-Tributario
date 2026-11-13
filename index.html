@@ -244,7 +244,7 @@
 
     <!-- SCRIPT LÓGICO Y AUTENTICACIÓN -->
     <script>
-        const PIN_SECRETO = "Cont1316"; 
+        const PIN_SECRETO = "contable1316"; 
         const FIREBASE_URL = "https://control-tributario-e5840-default-rtdb.firebaseio.com";
 
         const taxCatalog = {
@@ -467,16 +467,19 @@
         function editObligation(id) {
             const o = obligations.find(x => x.id === id);
             if (o) {
+                switchTab('dashboard');
+
                 document.getElementById('obligation-edit-id').value = o.id;
-                document.getElementById('ob-rif').value = o.rif;
-                document.getElementById('ob-client').value = o.clientName;
-                document.getElementById('ob-category').value = o.category;
+                document.getElementById('ob-rif').value = o.rif || '';
+                document.getElementById('ob-client').value = o.clientName || '';
+                document.getElementById('ob-category').value = o.category || 'Impuestos Nacionales (SENIAT)';
                 updateTaxOptions();
-                document.getElementById('ob-tax').value = o.taxType;
-                document.getElementById('ob-period').value = o.period;
-                document.getElementById('ob-duedate').value = o.dueDate;
-                document.getElementById('ob-amount').value = o.amountStr;
-                document.getElementById('ob-status').value = o.status;
+                document.getElementById('ob-tax').value = o.taxType || '';
+                document.getElementById('ob-period').value = o.period || 'Noviembre 2026';
+                document.getElementById('ob-duedate').value = o.dueDate || '';
+                document.getElementById('ob-amount').value = o.amountStr || '';
+                document.getElementById('ob-status').value = o.status || 'Por pagar';
+                
                 document.getElementById('obligation-form-title').innerText = 'Editar Obligación';
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
