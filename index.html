@@ -485,6 +485,12 @@
             }
         }
 
+        // MARCAR COMO PAGADO DIRECTAMENTE
+        function markAsPaid(id) {
+            obligations = obligations.map(o => o.id === id ? { ...o, status: 'Pagado' } : o);
+            saveData();
+        }
+
         function resetObligationForm() {
             document.getElementById('obligation-edit-id').value = '';
             document.getElementById('ob-rif').value = '';
@@ -972,6 +978,7 @@
                                     <div class="text-amber-400 font-mono mt-0.5 font-bold">Bs. ${item.amountStr} <span class="text-slate-400 font-normal">[${item.status}]</span></div>
                                 </div>
                                 <div class="flex gap-1.5">
+                                    <button onclick="markAsPaid(${item.id})" class="bg-emerald-950 text-emerald-400 border border-emerald-900 px-2.5 py-1 rounded text-[11px] hover:bg-emerald-900">Pagado</button>
                                     <button onclick="editObligation(${item.id})" class="bg-blue-950 text-blue-400 border border-blue-900 px-2.5 py-1 rounded text-[11px] hover:bg-blue-900">Editar</button>
                                     <button onclick="deleteObligation(${item.id})" class="bg-rose-950 text-rose-400 border border-rose-900 px-2.5 py-1 rounded text-[11px] hover:bg-rose-900">Borrar</button>
                                 </div>
