@@ -949,10 +949,13 @@
             if(groupedListEl) {
                 const mapByClient = {};
                 obligations.forEach(item => {
-                    if(!mapByClient[item.clientName]) {
-                        mapByClient[item.clientName] = [];
+                    // FILTRAR LOS PAGADOS PARA QUE NO APAREZCAN EN REGISTROS RECIENTES
+                    if (item.status !== 'Pagado') {
+                        if(!mapByClient[item.clientName]) {
+                            mapByClient[item.clientName] = [];
+                        }
+                        mapByClient[item.clientName].push(item);
                     }
-                    mapByClient[item.clientName].push(item);
                 });
 
                 let groupHtml = '';
@@ -990,7 +993,7 @@
                         </details>
                     `;
                 }
-                groupedListEl.innerHTML = groupHtml || '<p class="text-xs text-slate-400 italic">No hay registros recientes.</p>';
+                groupedListEl.innerHTML = groupHtml || '<p class="text-xs text-slate-400 italic">No hay registros pendientes recientes.</p>';
             }
 
             const gList = document.getElementById('groups-list');
