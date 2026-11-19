@@ -31,7 +31,7 @@
                 <h1 class="text-xl font-bold text-emerald-400">Legal y Contable, S.C.</h1>
                 <p class="text-xs text-slate-400">Control Tributario y Parafiscal (Sincronizado en la Nube)</p>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 flex-wrap justify-end">
                 <nav class="flex gap-2 flex-wrap">
                     <button onclick="switchTab('dashboard')" id="btn-dashboard" class="px-3 py-2 rounded-xl text-xs font-medium transition bg-emerald-600 text-white shadow">Panel</button>
                     <button onclick="switchTab('groups')" id="btn-groups" class="px-3 py-2 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Grupos</button>
@@ -40,20 +40,12 @@
                     <button onclick="switchTab('periods')" id="btn-periods" class="px-3 py-2 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">Filtro Mes</button>
                     <button onclick="switchTab('alerts')" id="btn-alerts" class="px-3 py-2 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300">⚠️ Alertas</button>
                 </nav>
+                <div id="sync-status" class="text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1.5 rounded-lg">
+                    ☁️ Sincronizado con Firebase
+                </div>
                 <button onclick="lockSystem()" title="Bloquear sistema" class="bg-slate-700 hover:bg-rose-950 hover:text-rose-400 text-slate-300 p-2.5 rounded-xl transition">🔒</button>
             </div>
         </header>
-
-        <!-- AVISO DE ALERTA DINÁMICO -->
-        <div id="alert-card" class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex justify-between items-center">
-            <div>
-                <span id="alert-title" class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Estado de obligaciones</span>
-                <h3 id="total-alerta" class="text-2xl font-bold text-slate-100 mt-1">Sin alertas pendientes</h3>
-            </div>
-            <div id="sync-status" class="text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1.5 rounded-lg">
-                ☁️ Sincronizado con Firebase
-            </div>
-        </div>
 
         <!-- CONTENEDOR DE PESTAÑAS -->
         <main>
@@ -1058,8 +1050,6 @@
             const limitDate = new Date();
             limitDate.setDate(today.getDate() + 2);
 
-            let hasVencidos = false;
-            let hasPorVencer = false;
             let alertItems = [];
 
             hasPendingPayments = obligations.some(o => o.status !== 'Pagado');
@@ -1069,40 +1059,12 @@
                 if (o.status !== 'Pagado' && o.dueDate) {
                     const due = new Date(o.dueDate + 'T00:00:00');
                     if (due < today) {
-                        hasVencidos = true;
                         alertItems.push({ ...o, alertType: 'Vencido' });
                     } else if (due <= limitDate) {
-                        hasPorVencer = true;
                         alertItems.push({ ...o, alertType: 'Por Vencer' });
                     }
                 }
             });
-
-            const alertCard = document.getElementById('alert-card');
-            const alertTitle = document.getElementById('alert-title');
-            const totalAlertaEl = document.getElementById('total-alerta');
-
-            if (alertCard && alertTitle && totalAlertaEl) {
-                if (hasVencidos) {
-                    alertCard.className = "bg-rose-950/70 p-4 rounded-xl border border-rose-800 shadow flex justify-between items-center";
-                    alertTitle.className = "text-xs text-rose-300 uppercase tracking-wider font-semibold";
-                    alertTitle.innerText = "⚠️ Atención requerida";
-                    totalAlertaEl.className = "text-xl font-bold text-rose-400 mt-1";
-                    totalAlertaEl.innerText = "Existen saldos vencidos";
-                } else if (hasPorVencer) {
-                    alertCard.className = "bg-amber-950/70 p-4 rounded-xl border border-amber-800 shadow flex justify-between items-center";
-                    alertTitle.className = "text-xs text-amber-300 uppercase tracking-wider font-semibold";
-                    alertTitle.innerText = "⚡ Aviso de vencimiento";
-                    totalAlertaEl.className = "text-xl font-bold text-amber-400 mt-1";
-                    totalAlertaEl.innerText = "Existen saldos por vencer";
-                } else {
-                    alertCard.className = "bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex justify-between items-center";
-                    alertTitle.className = "text-xs text-slate-400 uppercase tracking-wider font-semibold";
-                    alertTitle.innerText = "Estado de obligaciones";
-                    totalAlertaEl.className = "text-xl font-bold text-emerald-400 mt-1";
-                    totalAlertaEl.innerText = "Sin alertas pendientes";
-                }
-            }
 
             const alertsResultsEl = document.getElementById('alerts-results');
             if (alertsResultsEl) {
