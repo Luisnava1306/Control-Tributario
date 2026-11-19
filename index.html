@@ -289,6 +289,9 @@
             { id: 2, clientName: 'Comercial El Carmen, C.A.', rif: 'J-12345678-9', group: 'Grupo Empresarial Zulia', category: 'Impuestos Nacionales (SENIAT)', taxType: 'IVA - Impuesto al Valor Agregado', period: 'Diciembre 2026', dueDate: '2026-12-18', amountStr: '1.985,36', status: 'Por pagar' }
         ];
 
+        let activeTab = 'dashboard';
+        let hasPendingPayments = false;
+
         function verifyPin(e) {
             e.preventDefault();
             const inputElement = document.getElementById('access-pin');
@@ -395,17 +398,30 @@
             return formatCurrency(num);
         }
 
+        function updateNavTabStyles() {
+            ['dashboard', 'groups', 'directory', 'consult', 'periods', 'alerts'].forEach(t => {
+                const btnEl = document.getElementById('btn-' + t);
+                if (!btnEl) return;
+
+                if (t === activeTab) {
+                    btnEl.className = "px-3 py-2 rounded-xl text-xs font-medium transition bg-emerald-600 text-white shadow";
+                } else if (t === 'alerts' && hasPendingPayments) {
+                    btnEl.className = "px-3 py-2 rounded-xl text-xs font-medium transition bg-rose-600 hover:bg-rose-500 text-white shadow";
+                } else {
+                    btnEl.className = "px-3 py-2 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300";
+                }
+            });
+        }
+
         function switchTab(tab) {
+            activeTab = tab;
             ['dashboard', 'groups', 'directory', 'consult', 'periods', 'alerts'].forEach(t => {
                 const tabEl = document.getElementById('tab-' + t);
-                const btnEl = document.getElementById('btn-' + t);
-                if(tabEl) tabEl.classList.add('hidden');
-                if(btnEl) btnEl.className = "px-3 py-2 rounded-xl text-xs font-medium transition bg-slate-700 hover:bg-slate-600 text-slate-300";
+                if (tabEl) tabEl.classList.add('hidden');
             });
-            const activeTab = document.getElementById('tab-' + tab);
-            const activeBtn = document.getElementById('btn-' + tab);
-            if(activeTab) activeTab.classList.remove('hidden');
-            if(activeBtn) activeBtn.className = "px-3 py-2 rounded-xl text-xs font-medium transition bg-emerald-600 text-white shadow";
+            const activeTabEl = document.getElementById('tab-' + tab);
+            if (activeTabEl) activeTabEl.classList.remove('hidden');
+            updateNavTabStyles();
         }
 
         function updateTaxOptions() {
@@ -485,7 +501,6 @@
             }
         }
 
-        // MARCAR COMO PAGADO DIRECTAMENTE
         function markAsPaid(id) {
             obligations = obligations.map(o => o.id === id ? { ...o, status: 'Pagado' } : o);
             saveData();
@@ -571,6 +586,19 @@
             document.getElementById('client-form-title').innerText = 'Nuevo Cliente';
         }
 
+        function groupObligationsByCategory(obsList) {
+            const map = {};
+            obsList.forEach(o => {
+                const cat = o.category || 'Sin categoría';
+                if (!map[cat]) {
+                    map[cat] = { items: [], subtotal: 0 };
+                }
+                map[cat].items.push(o);
+                map[cat].subtotal += parseToNumber(o.amountStr);
+            });
+            return map;
+        }
+
         function handleClientQuery(clientName) {
             document.getElementById('query-group').value = '';
             const container = document.getElementById('query-results');
@@ -578,6 +606,7 @@
 
             const clientObs = obligations.filter(o => o.clientName === clientName && o.status !== 'Pagado');
             const total = clientObs.reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
+            const byCat = groupObligationsByCategory(clientObs);
 
             let html = `
                 <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 space-y-3">
@@ -585,19 +614,26 @@
                         <span class="font-bold text-slate-100 text-base">${clientName}</span>
                         <button onclick="downloadImageReceipt('${clientName}', false)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow">Descargar Recibo (Imagen PNG)</button>
                     </div>
-                    <div class="space-y-2">
+                    <div class="space-y-3">
             `;
             if (clientObs.length === 0) {
                 html += `<p class="text-xs text-slate-400 italic">Sin obligaciones pendientes</p>`;
             } else {
-                clientObs.forEach(o => {
-                    html += `
-                        <div class="flex justify-between text-slate-300 text-xs border-b border-slate-800 pb-1">
-                            <span>[${o.category}] ${o.taxType} (${o.period}) - Vence: ${formatDate(o.dueDate)}</span>
-                            <strong class="font-mono text-emerald-400">Bs. ${o.amountStr}</strong>
-                        </div>
-                    `;
-                });
+                for (const [catName, catData] of Object.entries(byCat)) {
+                    html += `<div class="space-y-1.5 border-b border-slate-800 pb-2">
+                        <div class="text-xs font-semibold text-emerald-400">${catName}</div>`;
+                    catData.items.forEach(o => {
+                        html += `
+                            <div class="flex justify-between text-slate-300 text-xs pl-2">
+                                <span>${o.taxType} (${o.period}) - Vence: ${formatDate(o.dueDate)}</span>
+                                <strong class="font-mono text-emerald-400">Bs. ${o.amountStr}</strong>
+                            </div>
+                        `;
+                    });
+                    html += `<div class="text-right text-xs font-semibold text-slate-300 pt-1">
+                        Total ${catName}: <span class="font-mono text-emerald-400">Bs. ${formatCurrency(catData.subtotal)}</span>
+                    </div></div>`;
+                }
             }
             html += `
                     </div>
@@ -616,9 +652,15 @@
 
             const groupClients = clients.filter(c => c.group === groupName);
             let groupGrandTotal = 0;
+            const groupCatTotals = {};
+
             groupClients.forEach(client => {
                 const clientObs = obligations.filter(o => o.clientName === client.name && o.status !== 'Pagado');
                 groupGrandTotal += clientObs.reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
+                clientObs.forEach(o => {
+                    const cat = o.category || 'Sin categoría';
+                    groupCatTotals[cat] = (groupCatTotals[cat] || 0) + parseToNumber(o.amountStr);
+                });
             });
 
             let html = `
@@ -632,6 +674,8 @@
             groupClients.forEach(client => {
                 const clientObs = obligations.filter(o => o.clientName === client.name && o.status !== 'Pagado');
                 const clientTotal = clientObs.reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
+                const byCat = groupObligationsByCategory(clientObs);
+
                 html += `
                     <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 space-y-2">
                         <div class="font-semibold text-slate-100">${client.name}</div>
@@ -639,14 +683,21 @@
                 if (clientObs.length === 0) {
                     html += `<div class="text-slate-400 italic text-xs">Sin obligaciones pendientes</div>`;
                 } else {
-                    clientObs.forEach(o => {
-                        html += `
-                            <div class="flex justify-between text-slate-300 pl-3 border-l-2 border-slate-700 text-xs">
-                                <span>[${o.category}] ${o.taxType} (${o.period}) - Vence: ${formatDate(o.dueDate)}</span>
-                                <span class="font-mono text-emerald-400 font-bold">Bs. ${o.amountStr}</span>
-                            </div>
-                        `;
-                    });
+                    for (const [catName, catData] of Object.entries(byCat)) {
+                        html += `<div class="space-y-1 pl-2 border-l-2 border-slate-700">
+                            <div class="text-xs font-semibold text-emerald-400">${catName}</div>`;
+                        catData.items.forEach(o => {
+                            html += `
+                                <div class="flex justify-between text-slate-300 pl-2 text-xs">
+                                    <span>${o.taxType} (${o.period}) - Vence: ${formatDate(o.dueDate)}</span>
+                                    <span class="font-mono text-emerald-400 font-bold">Bs. ${o.amountStr}</span>
+                                </div>
+                            `;
+                        });
+                        html += `<div class="text-right text-xs text-slate-300 font-semibold">
+                            Subtotal ${catName}: <span class="font-mono text-emerald-400">Bs. ${formatCurrency(catData.subtotal)}</span>
+                        </div></div>`;
+                    }
                 }
                 html += `
                         <div class="text-right font-bold text-amber-400 pt-2 border-t border-slate-800 text-sm">
@@ -656,9 +707,20 @@
                 `;
             });
 
+            let catSummaryHtml = '';
+            for (const [catName, catSum] of Object.entries(groupCatTotals)) {
+                catSummaryHtml += `<div class="text-xs text-emerald-200 flex justify-between">
+                    <span>Total ${catName}:</span>
+                    <span class="font-mono font-semibold">Bs. ${formatCurrency(catSum)}</span>
+                </div>`;
+            }
+
             html += `
-                <div class="bg-emerald-950 p-4 rounded-xl border border-emerald-800 text-right font-bold text-emerald-300 text-base">
-                    TOTAL GENERAL DEL GRUPO: Bs. ${formatCurrency(groupGrandTotal)}
+                <div class="bg-emerald-950 p-4 rounded-xl border border-emerald-800 space-y-2">
+                    ${catSummaryHtml}
+                    <div class="text-right font-bold text-emerald-300 text-base pt-2 border-t border-emerald-800/80">
+                        TOTAL GENERAL DEL GRUPO: Bs. ${formatCurrency(groupGrandTotal)}
+                    </div>
                 </div>
             </div>
             `;
@@ -712,20 +774,28 @@
         }
 
         function downloadImageReceipt(name, isGroup = false) {
-            let groupClients = [];
             let total = 0;
             let structuredItems = [];
+            const generalCategoryTotals = {};
 
             if (isGroup) {
-                groupClients = clients.filter(c => c.group === name);
+                const groupClients = clients.filter(c => c.group === name);
                 groupClients.forEach(client => {
                     const clientObs = obligations.filter(o => o.clientName === client.name && o.status !== 'Pagado');
                     const clientSubtotal = clientObs.reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
                     total += clientSubtotal;
+
+                    const byCatMap = groupObligationsByCategory(clientObs);
+                    const categoriesArr = Object.entries(byCatMap).map(([catName, data]) => {
+                        generalCategoryTotals[catName] = (generalCategoryTotals[catName] || 0) + data.subtotal;
+                        return { catName, items: data.items, subtotal: data.subtotal };
+                    });
+
                     structuredItems.push({
                         clientName: client.name,
                         clientRif: client.rif || 'J-S/N',
-                        obligations: clientObs,
+                        categories: categoriesArr,
+                        hasObligations: clientObs.length > 0,
                         subtotal: clientSubtotal
                     });
                 });
@@ -734,25 +804,43 @@
                 const clientRif = clientObj ? clientObj.rif : (obligations.find(o => o.clientName === name)?.rif || 'J-S/N');
                 const clientObs = obligations.filter(o => o.clientName === name && o.status !== 'Pagado');
                 total = clientObs.reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
+
+                const byCatMap = groupObligationsByCategory(clientObs);
+                const categoriesArr = Object.entries(byCatMap).map(([catName, data]) => {
+                    generalCategoryTotals[catName] = (generalCategoryTotals[catName] || 0) + data.subtotal;
+                    return { catName, items: data.items, subtotal: data.subtotal };
+                });
+
                 structuredItems.push({
                     clientName: name,
                     clientRif: clientRif,
-                    obligations: clientObs,
+                    categories: categoriesArr,
+                    hasObligations: clientObs.length > 0,
                     subtotal: total
                 });
             }
 
             let extraHeight = 0;
             structuredItems.forEach(item => {
-                extraHeight += 35;
-                if (item.obligations.length === 0) extraHeight += 25;
-                else extraHeight += (item.obligations.length * 32);
-                extraHeight += 30;
+                extraHeight += 32;
+                if (!item.hasObligations) {
+                    extraHeight += 26;
+                } else {
+                    item.categories.forEach(cat => {
+                        extraHeight += 24;
+                        extraHeight += (cat.items.length * 32);
+                        extraHeight += 22;
+                    });
+                }
+                extraHeight += 32;
             });
+
+            const generalCatEntries = Object.entries(generalCategoryTotals);
+            const summaryBoxHeight = 68 + (generalCatEntries.length * 22);
 
             const canvas = document.createElement('canvas');
             canvas.width = 680;
-            canvas.height = 250 + extraHeight + 85;
+            canvas.height = 240 + extraHeight + summaryBoxHeight + 35;
             const ctx = canvas.getContext('2d');
 
             ctx.fillStyle = '#0f172a';
@@ -805,29 +893,44 @@
                 ctx.fillText(`• Empresa: ${item.clientName} (${item.clientRif})`, 35, startY);
                 startY += 22;
 
-                if (item.obligations.length === 0) {
+                if (!item.hasObligations) {
                     ctx.fillStyle = '#94a3b8';
                     ctx.font = '11px italic sans-serif';
                     ctx.fillText('Sin obligaciones pendientes', 55, startY);
-                    startY += 25;
+                    startY += 26;
                 } else {
-                    item.obligations.forEach(o => {
-                        ctx.fillStyle = '#f8fafc';
-                        ctx.font = '12px sans-serif';
-                        ctx.fillText(`[${o.category}] ${o.taxType}`, 55, startY);
-                        startY += 16;
+                    item.categories.forEach(cat => {
+                        ctx.fillStyle = '#6ee7b7';
+                        ctx.font = 'bold 12px sans-serif';
+                        ctx.fillText(`Categoría: ${cat.catName}`, 50, startY);
+                        startY += 18;
 
-                        ctx.fillStyle = '#94a3b8';
-                        ctx.font = '11px sans-serif';
-                        ctx.fillText(`Periodo: ${o.period}   |   Vencimiento: ${formatDate(o.dueDate)}`, 70, startY);
+                        cat.items.forEach(o => {
+                            ctx.fillStyle = '#f8fafc';
+                            ctx.font = '12px sans-serif';
+                            ctx.fillText(o.taxType, 62, startY);
+                            startY += 15;
 
-                        ctx.fillStyle = '#34d399';
-                        ctx.font = 'bold 12px monospace';
+                            ctx.fillStyle = '#94a3b8';
+                            ctx.font = '11px sans-serif';
+                            ctx.fillText(`Periodo: ${o.period}   |   Vencimiento: ${formatDate(o.dueDate)}`, 74, startY);
+
+                            ctx.fillStyle = '#34d399';
+                            ctx.font = 'bold 12px monospace';
+                            ctx.textAlign = 'right';
+                            ctx.fillText(`Bs. ${o.amountStr}`, canvas.width - 50, startY);
+                            ctx.textAlign = 'left';
+
+                            startY += 17;
+                        });
+
+                        ctx.fillStyle = '#cbd5e1';
+                        ctx.font = 'bold 11px sans-serif';
                         ctx.textAlign = 'right';
-                        ctx.fillText(`Bs. ${o.amountStr}`, canvas.width - 50, startY);
+                        ctx.fillText(`Total ${cat.catName}: Bs. ${formatCurrency(cat.subtotal)}`, canvas.width - 50, startY);
                         ctx.textAlign = 'left';
 
-                        startY += 28;
+                        startY += 20;
                     });
                 }
 
@@ -837,28 +940,56 @@
                 ctx.fillText(`Subtotal Empresa: Bs. ${formatCurrency(item.subtotal)}`, canvas.width - 50, startY);
                 ctx.textAlign = 'left';
 
-                startY += 32;
+                startY += 28;
 
                 ctx.strokeStyle = '#334155';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.moveTo(35, startY - 15);
-                ctx.lineTo(canvas.width - 35, startY - 15);
+                ctx.moveTo(35, startY - 12);
+                ctx.lineTo(canvas.width - 35, startY - 12);
                 ctx.stroke();
             });
 
-            startY += 5;
+            startY += 4;
             ctx.fillStyle = '#064e3b';
-            ctx.fillRect(35, startY, canvas.width - 70, 65);
+            ctx.fillRect(35, startY, canvas.width - 70, summaryBoxHeight);
 
+            let summaryY = startY + 22;
             ctx.fillStyle = '#a7f3d0';
             ctx.font = 'bold 11px sans-serif';
-            ctx.fillText(isGroup ? 'TOTAL GENERAL DEL GRUPO' : 'TOTAL GENERAL A PAGAR', 55, startY + 26);
+            ctx.textAlign = 'left';
+            ctx.fillText(isGroup ? 'RESUMEN GENERAL DEL GRUPO POR CATEGORÍA' : 'RESUMEN GENERAL POR CATEGORÍA', 55, summaryY);
+            summaryY += 18;
+
+            generalCatEntries.forEach(([catName, catAmount]) => {
+                ctx.fillStyle = '#d1fae5';
+                ctx.font = '12px sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(`${catName}:`, 55, summaryY);
+
+                ctx.fillStyle = '#6ee7b7';
+                ctx.font = 'bold 12px monospace';
+                ctx.textAlign = 'right';
+                ctx.fillText(`Bs. ${formatCurrency(catAmount)}`, canvas.width - 55, summaryY);
+                summaryY += 20;
+            });
+
+            ctx.strokeStyle = '#047857';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(55, summaryY - 8);
+            ctx.lineTo(canvas.width - 55, summaryY - 8);
+            ctx.stroke();
+
+            ctx.fillStyle = '#a7f3d0';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(isGroup ? 'TOTAL GENERAL DEL GRUPO' : 'TOTAL GENERAL A PAGAR', 55, summaryY + 10);
 
             ctx.fillStyle = '#34d399';
-            ctx.font = 'bold 20px monospace';
+            ctx.font = 'bold 19px monospace';
             ctx.textAlign = 'right';
-            ctx.fillText(`Bs. ${formatCurrency(total)}`, canvas.width - 55, startY + 42);
+            ctx.fillText(`Bs. ${formatCurrency(total)}`, canvas.width - 55, summaryY + 12);
             ctx.textAlign = 'left';
 
             const link = document.createElement('a');
@@ -876,6 +1007,9 @@
             let hasVencidos = false;
             let hasPorVencer = false;
             let alertItems = [];
+
+            hasPendingPayments = obligations.some(o => o.status !== 'Pagado');
+            updateNavTabStyles();
 
             obligations.forEach(o => {
                 if (o.status !== 'Pagado' && o.dueDate) {
@@ -949,7 +1083,6 @@
             if(groupedListEl) {
                 const mapByClient = {};
                 obligations.forEach(item => {
-                    // FILTRAR LOS PAGADOS PARA QUE NO APAREZCAN EN REGISTROS RECIENTES
                     if (item.status !== 'Pagado') {
                         if(!mapByClient[item.clientName]) {
                             mapByClient[item.clientName] = [];
