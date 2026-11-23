@@ -23,11 +23,11 @@
         <p id="pin-error" class="text-xs text-rose-400 text-center hidden">Contraseña incorrecta. Intente nuevamente.</p>
     </div>
 
-    <!-- APLICACIÓN PRINCIPAL ESTILO MENÚ LATERAL + PANTALLA DE INICIO DE MENÚ -->
+    <!-- APLICACIÓN PRINCIPAL -->
     <div id="main-app" class="hidden w-full max-w-6xl bg-slate-900 min-h-[88vh] rounded-2xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col md:flex-row">
         
-        <!-- MENÚ LATERAL IZQUIERDO -->
-        <aside class="w-full md:w-64 bg-slate-950 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col justify-between shrink-0">
+        <!-- MENÚ LATERAL IZQUIERDO (OCULTO EN MENÚ PRINCIPAL, VISIBLE AL ELEGIR UNA OPCIÓN) -->
+        <aside id="sidebar-nav" class="hidden w-full md:w-64 bg-slate-950 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col justify-between shrink-0">
             <div>
                 <div class="p-5 border-b border-slate-800 flex items-center justify-between">
                     <div>
@@ -42,7 +42,7 @@
                 </div>
 
                 <nav class="px-3 space-y-1.5 pb-4">
-                    <button onclick="switchTab('menu')" id="btn-menu" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-medium transition flex items-center gap-2.5 bg-emerald-600 text-white shadow">
+                    <button onclick="switchTab('menu')" id="btn-menu" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-medium transition flex items-center gap-2.5 text-slate-300 hover:bg-slate-800/80">
                         <span>🏠</span>
                         <span>Menú Principal</span>
                     </button>
@@ -92,9 +92,17 @@
                     <h2 id="module-title" class="text-base font-bold text-emerald-400">Menú Principal</h2>
                     <p id="module-subtitle" class="text-xs text-slate-400">Seleccione la operación que desea realizar</p>
                 </div>
-                <button onclick="switchTab('menu')" id="btn-back-menu" class="hidden bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-medium transition">
-                    ← Volver al Menú
-                </button>
+                <div class="flex items-center gap-2">
+                    <span id="home-sync-status" class="text-[11px] text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1.5 rounded-xl">
+                        ☁️ Sincronizado con Firebase
+                    </span>
+                    <button onclick="switchTab('menu')" id="btn-back-menu" class="hidden bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-medium transition">
+                        ← Volver al Menú
+                    </button>
+                    <button onclick="lockSystem()" id="btn-home-lock" title="Bloquear sistema" class="bg-slate-700 hover:bg-rose-950 hover:text-rose-400 text-slate-300 px-3 py-1.5 rounded-xl transition text-xs font-medium">
+                        🔒 Bloquear
+                    </button>
+                </div>
             </header>
 
             <!-- CONTENEDOR DE PESTAÑAS -->
@@ -106,7 +114,7 @@
                         <button onclick="switchTab('dashboard')" class="text-left bg-slate-800 hover:bg-slate-800/70 border border-slate-700 hover:border-emerald-500/70 p-5 rounded-2xl transition shadow group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">📝</span>
-                                <span id="menu-pending-badge" class="text-[11px] bg-emerald-950 text-emerald-400 border border-emerald-800/60 px-2.5 py-0.5 rounded-full font-mono">0 pendientes</span>
+                                <span id="menu-pending-badge" class="text-[11px] bg-emerald-950 text-emerald-400 border border-emerald-800/60 px-2.5 py-0.5 rounded-full font-mono">0 pendiente(s)</span>
                             </div>
                             <div class="text-sm font-bold text-slate-100 group-hover:text-emerald-400 transition">Registrar Obligación</div>
                             <p class="text-xs text-slate-400">Cargar nuevos tributos (SENIAT, municipales o parafiscales) y ver registros agrupados.</p>
@@ -115,7 +123,7 @@
                         <button onclick="switchTab('groups')" class="text-left bg-slate-800 hover:bg-slate-800/70 border border-slate-700 hover:border-emerald-500/70 p-5 rounded-2xl transition shadow group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">🗂️</span>
-                                <span id="menu-groups-badge" class="text-[11px] bg-slate-900 text-slate-300 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">0 grupos</span>
+                                <span id="menu-groups-badge" class="text-[11px] bg-slate-900 text-slate-300 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">0 grupo(s)</span>
                             </div>
                             <div class="text-sm font-bold text-slate-100 group-hover:text-emerald-400 transition">Verificar Grupos</div>
                             <p class="text-xs text-slate-400">Consultar grupos corporativos, ver empresas asociadas o crear nuevos grupos.</p>
@@ -124,7 +132,7 @@
                         <button onclick="switchTab('directory')" class="text-left bg-slate-800 hover:bg-slate-800/70 border border-slate-700 hover:border-emerald-500/70 p-5 rounded-2xl transition shadow group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">🏢</span>
-                                <span id="menu-clients-badge" class="text-[11px] bg-slate-900 text-slate-300 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">0 clientes</span>
+                                <span id="menu-clients-badge" class="text-[11px] bg-slate-900 text-slate-300 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">0 cliente(s)</span>
                             </div>
                             <div class="text-sm font-bold text-slate-100 group-hover:text-emerald-400 transition">Directorio de Clientes</div>
                             <p class="text-xs text-slate-400">Administrar RIF, razones sociales, teléfonos y asignación de grupos.</p>
@@ -151,7 +159,7 @@
                         <button onclick="switchTab('alerts')" id="menu-card-alerts" class="text-left bg-slate-800 hover:bg-slate-800/70 border border-slate-700 hover:border-rose-500/70 p-5 rounded-2xl transition shadow group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">⚠️</span>
-                                <span id="menu-alerts-badge" class="text-[11px] bg-slate-900 text-slate-300 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">0 alertas</span>
+                                <span id="menu-alerts-badge" class="text-[11px] bg-slate-900 text-slate-300 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">0 alerta(s)</span>
                             </div>
                             <div class="text-sm font-bold text-slate-100 group-hover:text-rose-400 transition">Alertas y Vencimientos</div>
                             <p class="text-xs text-slate-400">Verificar obligaciones vencidas o próximas a vencer (en 2 días o menos).</p>
@@ -405,6 +413,13 @@
         let activeTab = 'menu';
         let hasPendingPayments = false;
 
+        function setSyncLabel(text) {
+            const sideEl = document.getElementById('sync-status');
+            const homeEl = document.getElementById('home-sync-status');
+            if (sideEl) sideEl.innerHTML = text;
+            if (homeEl) homeEl.innerHTML = text;
+        }
+
         function verifyPin(e) {
             e.preventDefault();
             const inputElement = document.getElementById('access-pin');
@@ -444,10 +459,10 @@
                 }
                 saveToLocalStorage();
                 renderAll();
-                document.getElementById('sync-status').innerHTML = "☁️ Sincronizado con Firebase";
+                setSyncLabel("☁️ Sincronizado con Firebase");
             } catch (err) {
                 console.warn("Modo offline o error al conectar con Firebase.", err);
-                document.getElementById('sync-status').innerHTML = "⚡ Modo Local (Offline)";
+                setSyncLabel("⚡ Modo Local (Offline)");
                 renderAll();
             }
         }
@@ -457,16 +472,16 @@
             renderAll();
             
             try {
-                document.getElementById('sync-status').innerHTML = "🔄 Sincronizando...";
+                setSyncLabel("🔄 Sincronizando...");
                 await fetch(`${FIREBASE_URL}/data.json`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ groups, clients, obligations })
                 });
-                document.getElementById('sync-status').innerHTML = "☁️ Sincronizado con Firebase";
+                setSyncLabel("☁️ Sincronizado con Firebase");
             } catch (err) {
                 console.error("Error al sincronizar con Firebase:", err);
-                document.getElementById('sync-status').innerHTML = "⚠️ Error de Sincronización";
+                setSyncLabel("⚠️ Error de Sincronización");
             }
         }
 
@@ -512,6 +527,17 @@
         }
 
         function updateNavTabStyles() {
+            const sidebarEl = document.getElementById('sidebar-nav');
+            const isMenu = activeTab === 'menu';
+
+            if (sidebarEl) {
+                if (isMenu) {
+                    sidebarEl.classList.add('hidden');
+                } else {
+                    sidebarEl.classList.remove('hidden');
+                }
+            }
+
             ['menu', 'dashboard', 'groups', 'directory', 'consult', 'periods', 'alerts'].forEach(t => {
                 const btnEl = document.getElementById('btn-' + t);
                 if (!btnEl) return;
@@ -526,11 +552,28 @@
             });
 
             const backBtn = document.getElementById('btn-back-menu');
+            const homeSync = document.getElementById('home-sync-status');
+            const homeLock = document.getElementById('btn-home-lock');
+
             if (backBtn) {
-                if (activeTab === 'menu') {
+                if (isMenu) {
                     backBtn.classList.add('hidden');
                 } else {
                     backBtn.classList.remove('hidden');
+                }
+            }
+            if (homeSync) {
+                if (isMenu) {
+                    homeSync.classList.remove('hidden');
+                } else {
+                    homeSync.classList.add('hidden');
+                }
+            }
+            if (homeLock) {
+                if (isMenu) {
+                    homeLock.classList.remove('hidden');
+                } else {
+                    homeLock.classList.add('hidden');
                 }
             }
         }
