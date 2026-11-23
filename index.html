@@ -864,59 +864,60 @@
             canvas.height = headerOffset + rowsHeight + summaryBoxHeight + 45;
             const ctx = canvas.getContext('2d');
 
-            ctx.fillStyle = '#0f172a';
+            // Fondo blanco y bordes en negro/gris oscuro para el recibo
+            ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.strokeStyle = '#059669';
-            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#111827';
+            ctx.lineWidth = 3;
             ctx.strokeRect(16, 16, canvas.width - 32, canvas.height - 32);
 
-            ctx.fillStyle = '#34d399';
+            ctx.fillStyle = '#000000';
             ctx.font = 'bold 28px sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText('LEGAL Y CONTABLE, S.C.', canvas.width / 2, 64);
 
-            ctx.fillStyle = '#94a3b8';
+            ctx.fillStyle = '#374151';
             ctx.font = '14px sans-serif';
             ctx.fillText('Control Tributario y Parafiscal - Detalle de Conceptos por Categoría', canvas.width / 2, 90);
 
-            ctx.strokeStyle = '#334155';
+            ctx.strokeStyle = '#9ca3af';
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(marginX, 110);
             ctx.lineTo(canvas.width - marginX, 110);
             ctx.stroke();
 
-            ctx.fillStyle = '#f8fafc';
+            ctx.fillStyle = '#000000';
             ctx.font = 'bold 16px sans-serif';
             ctx.textAlign = 'left';
             ctx.fillText(`${isGroup ? 'Grupo Corporativo:' : 'Cliente:'} ${name}`, marginX, 140);
 
             if (!isGroup && structuredItems[0].clientRif) {
-                ctx.fillStyle = '#34d399';
+                ctx.fillStyle = '#000000';
                 ctx.font = 'bold 14px monospace';
                 ctx.fillText(`RIF: ${structuredItems[0].clientRif}`, marginX, 162);
             }
 
             ctx.font = '13px sans-serif';
-            ctx.fillStyle = '#94a3b8';
+            ctx.fillStyle = '#374151';
             ctx.fillText(`Fecha de Emisión: ${formatDate(new Date().toISOString().split('T')[0])}`, marginX, isGroup ? 164 : 184);
 
-            ctx.fillStyle = '#cbd5e1';
+            ctx.fillStyle = '#000000';
             ctx.font = 'bold 13px sans-serif';
             ctx.fillText('CONCEPTOS PENDIENTES POR EMPRESA Y CATEGORÍA:', marginX, isGroup ? 196 : 214);
 
             let currentRowY = headerOffset;
 
             const drawCompanyCard = (item, cardX, cardY, cardW, cardH) => {
-                ctx.fillStyle = '#111827';
+                ctx.fillStyle = '#ffffff';
                 ctx.fillRect(cardX, cardY, cardW, cardH);
-                ctx.strokeStyle = '#334155';
+                ctx.strokeStyle = '#374151';
                 ctx.lineWidth = 1.5;
                 ctx.strokeRect(cardX, cardY, cardW, cardH);
 
                 let y = cardY + 24;
-                ctx.fillStyle = '#34d399';
+                ctx.fillStyle = '#000000';
                 ctx.font = 'bold 15px sans-serif';
                 ctx.textAlign = 'left';
                 const companyHeader = fitTextToMaxWidth(ctx, `• Empresa: ${item.clientName} (${item.clientRif})`, cardW - 32);
@@ -924,13 +925,13 @@
                 y += 24;
 
                 if (!item.hasObligations) {
-                    ctx.fillStyle = '#94a3b8';
+                    ctx.fillStyle = '#4b5563';
                     ctx.font = 'italic 13px sans-serif';
                     ctx.fillText('Sin obligaciones pendientes', cardX + 28, y);
                     y += 26;
                 } else {
                     item.categories.forEach(cat => {
-                        ctx.fillStyle = '#6ee7b7';
+                        ctx.fillStyle = '#000000';
                         ctx.font = 'bold 13px sans-serif';
                         ctx.textAlign = 'left';
                         ctx.fillText(`Categoría: ${cat.catName}`, cardX + 24, y);
@@ -942,13 +943,13 @@
                             const amountWidth = ctx.measureText(amountLabel).width;
                             const maxConceptWidth = cardW - 60 - amountWidth;
 
-                            ctx.fillStyle = '#f8fafc';
+                            ctx.fillStyle = '#111827';
                             ctx.font = '13px sans-serif';
                             ctx.textAlign = 'left';
                             const rawLine = `${o.taxType} | Periodo: ${o.period} | Vence: ${formatDate(o.dueDate)}`;
                             ctx.fillText(fitTextToMaxWidth(ctx, rawLine, maxConceptWidth), cardX + 34, y);
 
-                            ctx.fillStyle = '#34d399';
+                            ctx.fillStyle = '#000000';
                             ctx.font = 'bold 14px monospace';
                             ctx.textAlign = 'right';
                             ctx.fillText(amountLabel, cardX + cardW - 18, y);
@@ -957,7 +958,7 @@
                             y += 24;
                         });
 
-                        ctx.fillStyle = '#cbd5e1';
+                        ctx.fillStyle = '#111827';
                         ctx.font = 'bold 12px sans-serif';
                         ctx.textAlign = 'right';
                         ctx.fillText(`Subtotal ${cat.catName}: Bs. ${formatCurrency(cat.subtotal)}`, cardX + cardW - 18, y);
@@ -967,7 +968,7 @@
                     });
                 }
 
-                ctx.fillStyle = '#fbbf24';
+                ctx.fillStyle = '#000000';
                 ctx.font = 'bold 14px sans-serif';
                 ctx.textAlign = 'right';
                 ctx.fillText(`Subtotal Empresa: Bs. ${formatCurrency(item.subtotal)}`, cardX + cardW - 18, y);
@@ -997,42 +998,45 @@
             }
 
             currentRowY += 4;
-            ctx.fillStyle = '#064e3b';
+            ctx.fillStyle = '#f3f4f6';
             ctx.fillRect(marginX, currentRowY, canvasWidth - marginX * 2, summaryBoxHeight);
+            ctx.strokeStyle = '#111827';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(marginX, currentRowY, canvasWidth - marginX * 2, summaryBoxHeight);
 
             let summaryY = currentRowY + 26;
-            ctx.fillStyle = '#a7f3d0';
+            ctx.fillStyle = '#000000';
             ctx.font = 'bold 13px sans-serif';
             ctx.textAlign = 'left';
             ctx.fillText(isGroup ? 'RESUMEN GENERAL DEL GRUPO POR CATEGORÍA' : 'RESUMEN GENERAL POR CATEGORÍA', marginX + 24, summaryY);
             summaryY += 22;
 
             generalCatEntries.forEach(([catName, catAmount]) => {
-                ctx.fillStyle = '#d1fae5';
+                ctx.fillStyle = '#111827';
                 ctx.font = '14px sans-serif';
                 ctx.textAlign = 'left';
                 ctx.fillText(`${catName}:`, marginX + 24, summaryY);
 
-                ctx.fillStyle = '#6ee7b7';
+                ctx.fillStyle = '#000000';
                 ctx.font = 'bold 15px monospace';
                 ctx.textAlign = 'right';
                 ctx.fillText(`Bs. ${formatCurrency(catAmount)}`, canvasWidth - marginX - 24, summaryY);
                 summaryY += 23;
             });
 
-            ctx.strokeStyle = '#047857';
+            ctx.strokeStyle = '#6b7280';
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(marginX + 24, summaryY - 8);
             ctx.lineTo(canvasWidth - marginX - 24, summaryY - 8);
             ctx.stroke();
 
-            ctx.fillStyle = '#a7f3d0';
+            ctx.fillStyle = '#000000';
             ctx.font = 'bold 15px sans-serif';
             ctx.textAlign = 'left';
             ctx.fillText(isGroup ? 'TOTAL GENERAL DEL GRUPO' : 'TOTAL GENERAL A PAGAR', marginX + 24, summaryY + 12);
 
-            ctx.fillStyle = '#34d399';
+            ctx.fillStyle = '#000000';
             ctx.font = 'bold 24px monospace';
             ctx.textAlign = 'right';
             ctx.fillText(`Bs. ${formatCurrency(total)}`, canvasWidth - marginX - 24, summaryY + 15);
