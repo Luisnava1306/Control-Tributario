@@ -6,78 +6,78 @@
     <title>Legal y Contable, S.C. - Control Tributario</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-center items-center p-4">
+<body class="bg-white text-black font-sans min-h-screen flex flex-col justify-center items-center p-4">
 
     <!-- PANTALLA DE LOGIN / CONTRASEÑA -->
-    <div id="auth-screen" class="w-full max-w-sm bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl space-y-4">
+    <div id="auth-screen" class="w-full max-w-sm bg-white p-6 rounded-2xl border-2 border-black shadow-lg space-y-4">
         <div class="text-center space-y-1">
-            <h1 class="text-lg font-bold text-emerald-400">Legal y Contable, S.C.</h1>
-            <p class="text-xs text-slate-400">Ingrese su contraseña de acceso</p>
+            <h1 class="text-lg font-bold text-emerald-700">Legal y Contable, S.C.</h1>
+            <p class="text-xs text-neutral-700">Ingrese su contraseña de acceso</p>
         </div>
         <form onsubmit="verifyPin(event)" class="space-y-3">
             <div>
-                <input type="password" id="access-pin" required placeholder="Escriba su contraseña..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500" />
+                <input type="password" id="access-pin" required placeholder="Escriba su contraseña..." class="w-full bg-white border-2 border-black rounded-xl p-3 text-sm text-black placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-600" />
             </div>
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl transition shadow text-sm">Entrar al Sistema</button>
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl transition border border-black text-sm">Entrar al Sistema</button>
         </form>
-        <p id="pin-error" class="text-xs text-rose-400 text-center hidden">Contraseña incorrecta. Intente nuevamente.</p>
+        <p id="pin-error" class="text-xs text-rose-700 font-semibold text-center hidden">Contraseña incorrecta. Intente nuevamente.</p>
     </div>
 
     <!-- APLICACIÓN PRINCIPAL -->
-    <div id="main-app" class="hidden w-full max-w-6xl bg-slate-900 min-h-[88vh] rounded-2xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col md:flex-row">
+    <div id="main-app" class="hidden w-full max-w-6xl bg-white min-h-[88vh] rounded-2xl border-2 border-black shadow-xl overflow-hidden flex flex-col md:flex-row">
         
         <!-- MENÚ LATERAL IZQUIERDO (OCULTO EN MENÚ PRINCIPAL, VISIBLE AL ELEGIR UNA OPCIÓN) -->
-        <aside id="sidebar-nav" class="hidden w-full md:w-64 bg-slate-950 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col justify-between shrink-0">
+        <aside id="sidebar-nav" class="hidden w-full md:w-64 bg-neutral-50 border-b-2 md:border-b-0 md:border-r-2 border-black flex flex-col justify-between shrink-0">
             <div>
-                <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+                <div class="p-5 border-b-2 border-black flex items-center justify-between bg-white">
                     <div>
-                        <div class="text-base font-bold text-emerald-400 tracking-tight">Legal y Contable, S.C.</div>
-                        <div class="text-[11px] text-slate-400">Control Tributario</div>
+                        <div class="text-base font-bold text-emerald-700 tracking-tight">Legal y Contable, S.C.</div>
+                        <div class="text-[11px] text-neutral-700 font-medium">Control Tributario</div>
                     </div>
-                    <span class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800/70 px-2 py-0.5 rounded font-semibold">2026</span>
+                    <span class="text-[10px] bg-emerald-100 text-emerald-900 border border-black px-2 py-0.5 rounded font-bold">2026</span>
                 </div>
 
-                <div class="px-4 pt-4 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                <div class="px-4 pt-4 pb-2 text-[10px] font-bold uppercase tracking-wider text-neutral-700">
                     Navegación
                 </div>
 
                 <nav class="px-3 space-y-1.5 pb-4">
-                    <button onclick="switchTab('menu')" id="btn-menu" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-medium transition flex items-center gap-2.5 text-slate-300 hover:bg-slate-800/80">
+                    <button onclick="switchTab('menu')" id="btn-menu" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2.5 bg-black text-white border border-black">
                         <span>🏠</span>
                         <span>Menú Principal</span>
                     </button>
-                    <button onclick="switchTab('dashboard')" id="btn-dashboard" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-medium transition flex items-center gap-2.5 text-slate-300 hover:bg-slate-800/80">
+                    <button onclick="switchTab('dashboard')" id="btn-dashboard" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2.5 bg-white text-black border border-black hover:bg-emerald-50">
                         <span>📝</span>
                         <span>Registrar Obligación</span>
                     </button>
-                    <button onclick="switchTab('groups')" id="btn-groups" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-medium transition flex items-center gap-2.5 text-slate-300 hover:bg-slate-800/80">
+                    <button onclick="switchTab('groups')" id="btn-groups" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2.5 bg-white text-black border border-black hover:bg-emerald-50">
                         <span>🗂️</span>
                         <span>Verificar Grupos</span>
                     </button>
-                    <button onclick="switchTab('directory')" id="btn-directory" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-medium transition flex items-center gap-2.5 text-slate-300 hover:bg-slate-800/80">
+                    <button onclick="switchTab('directory')" id="btn-directory" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2.5 bg-white text-black border border-black hover:bg-emerald-50">
                         <span>🏢</span>
                         <span>Clientes</span>
                     </button>
-                    <button onclick="switchTab('consult')" id="btn-consult" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-medium transition flex items-center gap-2.5 text-slate-300 hover:bg-slate-800/80">
+                    <button onclick="switchTab('consult')" id="btn-consult" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2.5 bg-white text-black border border-black hover:bg-emerald-50">
                         <span>🧾</span>
                         <span>Recibos</span>
                     </button>
-                    <button onclick="switchTab('periods')" id="btn-periods" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-medium transition flex items-center gap-2.5 text-slate-300 hover:bg-slate-800/80">
+                    <button onclick="switchTab('periods')" id="btn-periods" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2.5 bg-white text-black border border-black hover:bg-emerald-50">
                         <span>📅</span>
                         <span>Filtro Mes</span>
                     </button>
-                    <button onclick="switchTab('alerts')" id="btn-alerts" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-medium transition flex items-center gap-2.5 text-slate-300 hover:bg-slate-800/80">
+                    <button onclick="switchTab('alerts')" id="btn-alerts" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2.5 bg-white text-black border border-black hover:bg-emerald-50">
                         <span>⚠️</span>
                         <span>Alertas</span>
                     </button>
                 </nav>
             </div>
 
-            <div class="p-4 border-t border-slate-800 space-y-2.5 bg-slate-950/80">
-                <div id="sync-status" class="text-[11px] text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-3 py-2 rounded-xl text-center">
+            <div class="p-4 border-t-2 border-black space-y-2.5 bg-white">
+                <div id="sync-status" class="text-[11px] text-emerald-950 font-semibold bg-emerald-100 border border-black px-3 py-2 rounded-xl text-center">
                     ☁️ Sincronizado con Firebase
                 </div>
-                <button onclick="lockSystem()" class="w-full bg-slate-800 hover:bg-rose-950 hover:text-rose-400 text-slate-300 px-3 py-2 rounded-xl transition text-xs font-medium flex items-center justify-center gap-2 border border-slate-700/60">
+                <button onclick="lockSystem()" class="w-full bg-black hover:bg-rose-700 text-white px-3 py-2 rounded-xl transition text-xs font-semibold flex items-center justify-center gap-2 border border-black">
                     <span>🔒</span>
                     <span>Bloquear Sistema</span>
                 </button>
@@ -85,118 +85,118 @@
         </aside>
 
         <!-- ÁREA DE TRABAJO PRINCIPAL -->
-        <div class="flex-1 flex flex-col bg-slate-900">
+        <div class="flex-1 flex flex-col bg-white">
             <!-- BARRA SUPERIOR DEL MÓDULO -->
-            <header class="bg-slate-800/90 border-b border-slate-700/80 px-6 py-4 flex flex-wrap justify-between items-center gap-3">
+            <header class="bg-white border-b-2 border-black px-6 py-4 flex flex-wrap justify-between items-center gap-3">
                 <div>
-                    <h2 id="module-title" class="text-base font-bold text-emerald-400">Menú Principal</h2>
-                    <p id="module-subtitle" class="text-xs text-slate-400">Seleccione la operación que desea realizar</p>
+                    <h2 id="module-title" class="text-base font-bold text-emerald-700">Menú Principal</h2>
+                    <p id="module-subtitle" class="text-xs text-neutral-700">Seleccione la operación que desea realizar</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span id="home-sync-status" class="text-[11px] text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1.5 rounded-xl">
+                    <span id="home-sync-status" class="text-[11px] text-emerald-950 font-semibold bg-emerald-100 border border-black px-3 py-1.5 rounded-xl">
                         ☁️ Sincronizado con Firebase
                     </span>
-                    <button onclick="switchTab('menu')" id="btn-back-menu" class="hidden bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-medium transition">
+                    <button onclick="switchTab('menu')" id="btn-back-menu" class="hidden bg-black hover:bg-neutral-800 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold transition border border-black">
                         ← Volver al Menú
                     </button>
-                    <button onclick="lockSystem()" id="btn-home-lock" title="Bloquear sistema" class="bg-slate-700 hover:bg-rose-950 hover:text-rose-400 text-slate-300 px-3 py-1.5 rounded-xl transition text-xs font-medium">
+                    <button onclick="lockSystem()" id="btn-home-lock" title="Bloquear sistema" class="bg-black hover:bg-rose-700 text-white px-3.5 py-1.5 rounded-xl transition text-xs font-semibold border border-black">
                         🔒 Bloquear
                     </button>
                 </div>
             </header>
 
             <!-- CONTENEDOR DE PESTAÑAS -->
-            <main class="p-6 flex-1">
+            <main class="p-6 flex-1 bg-white">
 
                 <!-- 0. MENÚ PRINCIPAL DE SELECCIÓN -->
                 <div id="tab-menu" class="space-y-6">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <button onclick="switchTab('dashboard')" class="text-left bg-slate-800 hover:bg-slate-800/70 border border-slate-700 hover:border-emerald-500/70 p-5 rounded-2xl transition shadow group space-y-2">
+                        <button onclick="switchTab('dashboard')" class="text-left bg-white hover:bg-emerald-50/70 border-2 border-black p-5 rounded-2xl transition shadow-sm group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">📝</span>
-                                <span id="menu-pending-badge" class="text-[11px] bg-emerald-950 text-emerald-400 border border-emerald-800/60 px-2.5 py-0.5 rounded-full font-mono">0 pendiente(s)</span>
+                                <span id="menu-pending-badge" class="text-[11px] bg-emerald-100 text-emerald-950 border border-black px-2.5 py-0.5 rounded-full font-mono font-bold">0 pendiente(s)</span>
                             </div>
-                            <div class="text-sm font-bold text-slate-100 group-hover:text-emerald-400 transition">Registrar Obligación</div>
-                            <p class="text-xs text-slate-400">Cargar nuevos tributos (SENIAT, municipales o parafiscales) y ver registros agrupados.</p>
+                            <div class="text-sm font-bold text-black group-hover:text-emerald-700 transition">Registrar Obligación</div>
+                            <p class="text-xs text-neutral-700">Cargar nuevos tributos (SENIAT, municipales o parafiscales) y ver registros agrupados.</p>
                         </button>
 
-                        <button onclick="switchTab('groups')" class="text-left bg-slate-800 hover:bg-slate-800/70 border border-slate-700 hover:border-emerald-500/70 p-5 rounded-2xl transition shadow group space-y-2">
+                        <button onclick="switchTab('groups')" class="text-left bg-white hover:bg-emerald-50/70 border-2 border-black p-5 rounded-2xl transition shadow-sm group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">🗂️</span>
-                                <span id="menu-groups-badge" class="text-[11px] bg-slate-900 text-slate-300 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">0 grupo(s)</span>
+                                <span id="menu-groups-badge" class="text-[11px] bg-neutral-100 text-black border border-black px-2.5 py-0.5 rounded-full font-mono font-bold">0 grupo(s)</span>
                             </div>
-                            <div class="text-sm font-bold text-slate-100 group-hover:text-emerald-400 transition">Verificar Grupos</div>
-                            <p class="text-xs text-slate-400">Consultar grupos corporativos, ver empresas asociadas o crear nuevos grupos.</p>
+                            <div class="text-sm font-bold text-black group-hover:text-emerald-700 transition">Verificar Grupos</div>
+                            <p class="text-xs text-neutral-700">Consultar grupos corporativos, ver empresas asociadas o crear nuevos grupos.</p>
                         </button>
 
-                        <button onclick="switchTab('directory')" class="text-left bg-slate-800 hover:bg-slate-800/70 border border-slate-700 hover:border-emerald-500/70 p-5 rounded-2xl transition shadow group space-y-2">
+                        <button onclick="switchTab('directory')" class="text-left bg-white hover:bg-emerald-50/70 border-2 border-black p-5 rounded-2xl transition shadow-sm group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">🏢</span>
-                                <span id="menu-clients-badge" class="text-[11px] bg-slate-900 text-slate-300 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">0 cliente(s)</span>
+                                <span id="menu-clients-badge" class="text-[11px] bg-neutral-100 text-black border border-black px-2.5 py-0.5 rounded-full font-mono font-bold">0 cliente(s)</span>
                             </div>
-                            <div class="text-sm font-bold text-slate-100 group-hover:text-emerald-400 transition">Directorio de Clientes</div>
-                            <p class="text-xs text-slate-400">Administrar RIF, razones sociales, teléfonos y asignación de grupos.</p>
+                            <div class="text-sm font-bold text-black group-hover:text-emerald-700 transition">Directorio de Clientes</div>
+                            <p class="text-xs text-neutral-700">Administrar RIF, razones sociales, teléfonos y asignación de grupos.</p>
                         </button>
 
-                        <button onclick="switchTab('consult')" class="text-left bg-slate-800 hover:bg-slate-800/70 border border-slate-700 hover:border-emerald-500/70 p-5 rounded-2xl transition shadow group space-y-2">
+                        <button onclick="switchTab('consult')" class="text-left bg-white hover:bg-emerald-50/70 border-2 border-black p-5 rounded-2xl transition shadow-sm group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">🧾</span>
-                                <span class="text-[11px] bg-slate-900 text-emerald-400 border border-slate-700 px-2.5 py-0.5 rounded-full">PNG B/N</span>
+                                <span class="text-[11px] bg-emerald-100 text-emerald-950 border border-black px-2.5 py-0.5 rounded-full font-bold">PNG B/N</span>
                             </div>
-                            <div class="text-sm font-bold text-slate-100 group-hover:text-emerald-400 transition">Consultar y Generar Recibos</div>
-                            <p class="text-xs text-slate-400">Revisar saldos por empresa o grupo y descargar recibos en blanco y negro.</p>
+                            <div class="text-sm font-bold text-black group-hover:text-emerald-700 transition">Consultar y Generar Recibos</div>
+                            <p class="text-xs text-neutral-700">Revisar saldos por empresa o grupo y descargar recibos en blanco y negro.</p>
                         </button>
 
-                        <button onclick="switchTab('periods')" class="text-left bg-slate-800 hover:bg-slate-800/70 border border-slate-700 hover:border-emerald-500/70 p-5 rounded-2xl transition shadow group space-y-2">
+                        <button onclick="switchTab('periods')" class="text-left bg-white hover:bg-emerald-50/70 border-2 border-black p-5 rounded-2xl transition shadow-sm group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">📅</span>
-                                <span class="text-[11px] bg-slate-900 text-slate-300 border border-slate-700 px-2.5 py-0.5 rounded-full">Mensual</span>
+                                <span class="text-[11px] bg-neutral-100 text-black border border-black px-2.5 py-0.5 rounded-full font-semibold">Mensual</span>
                             </div>
-                            <div class="text-sm font-bold text-slate-100 group-hover:text-emerald-400 transition">Filtro por Periodo / Mes</div>
-                            <p class="text-xs text-slate-400">Filtrar obligaciones registradas por mes y ver el monto acumulado del periodo.</p>
+                            <div class="text-sm font-bold text-black group-hover:text-emerald-700 transition">Filtro por Periodo / Mes</div>
+                            <p class="text-xs text-neutral-700">Filtrar obligaciones registradas por mes y ver el monto acumulado del periodo.</p>
                         </button>
 
-                        <button onclick="switchTab('alerts')" id="menu-card-alerts" class="text-left bg-slate-800 hover:bg-slate-800/70 border border-slate-700 hover:border-rose-500/70 p-5 rounded-2xl transition shadow group space-y-2">
+                        <button onclick="switchTab('alerts')" id="menu-card-alerts" class="text-left bg-white hover:bg-rose-50/70 border-2 border-black p-5 rounded-2xl transition shadow-sm group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">⚠️</span>
-                                <span id="menu-alerts-badge" class="text-[11px] bg-slate-900 text-slate-300 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">0 alerta(s)</span>
+                                <span id="menu-alerts-badge" class="text-[11px] bg-neutral-100 text-black border border-black px-2.5 py-0.5 rounded-full font-mono font-bold">0 alerta(s)</span>
                             </div>
-                            <div class="text-sm font-bold text-slate-100 group-hover:text-rose-400 transition">Alertas y Vencimientos</div>
-                            <p class="text-xs text-slate-400">Verificar obligaciones vencidas o próximas a vencer (en 2 días o menos).</p>
+                            <div class="text-sm font-bold text-black group-hover:text-rose-700 transition">Alertas y Vencimientos</div>
+                            <p class="text-xs text-neutral-700">Verificar obligaciones vencidas o próximas a vencer (en 2 días o menos).</p>
                         </button>
                     </div>
                 </div>
 
                 <!-- 1. DASHBOARD / REGISTRO -->
                 <div id="tab-dashboard" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow h-fit">
-                        <h3 id="obligation-form-title" class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Registrar Obligación</h3>
+                    <div class="bg-white p-5 rounded-xl border-2 border-black shadow-sm h-fit">
+                        <h3 id="obligation-form-title" class="text-sm font-bold mb-4 text-black border-b-2 border-black pb-2">Registrar Obligación</h3>
                         <form onsubmit="saveObligation(event)" class="space-y-3 text-sm">
                             <input type="hidden" id="obligation-edit-id" />
                             <div>
-                                <label class="text-xs text-slate-400 mb-1 block">RIF del cliente (Autocompleta)</label>
-                                <input type="text" id="ob-rif" oninput="autofillClient(this.value)" placeholder="Ej: J-12345678-9" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                                <label class="text-xs font-semibold text-black mb-1 block">RIF del cliente (Autocompleta)</label>
+                                <input type="text" id="ob-rif" oninput="autofillClient(this.value)" placeholder="Ej: J-12345678-9" class="w-full bg-white border border-black rounded-lg p-2 text-black" />
                             </div>
                             <div>
-                                <label class="text-xs text-slate-400 mb-1 block">Razón social *</label>
-                                <input type="text" id="ob-client" required placeholder="Nombre de la empresa" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                                <label class="text-xs font-semibold text-black mb-1 block">Razón social *</label>
+                                <input type="text" id="ob-client" required placeholder="Nombre de la empresa" class="w-full bg-white border border-black rounded-lg p-2 text-black" />
                             </div>
                             <div>
-                                <label class="text-xs text-slate-400 mb-1 block">Categoría</label>
-                                <select id="ob-category" onchange="updateTaxOptions()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 text-xs">
+                                <label class="text-xs font-semibold text-black mb-1 block">Categoría</label>
+                                <select id="ob-category" onchange="updateTaxOptions()" class="w-full bg-white border border-black rounded-lg p-2 text-black text-xs font-medium">
                                     <option>Impuestos Nacionales (SENIAT)</option>
                                     <option>Impuestos Municipales</option>
                                     <option>Parafiscales</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="text-xs text-slate-400 mb-1 block">Impuesto / Tributo</label>
-                                <select id="ob-tax" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 text-xs"></select>
+                                <label class="text-xs font-semibold text-black mb-1 block">Impuesto / Tributo</label>
+                                <select id="ob-tax" class="w-full bg-white border border-black rounded-lg p-2 text-black text-xs font-medium"></select>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label class="text-xs text-slate-400 mb-1 block">Periodo (Mes)</label>
-                                    <select id="ob-period" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 text-xs">
+                                    <label class="text-xs font-semibold text-black mb-1 block">Periodo (Mes)</label>
+                                    <select id="ob-period" class="w-full bg-white border border-black rounded-lg p-2 text-black text-xs font-medium">
                                         <option>Enero 2026</option>
                                         <option>Febrero 2026</option>
                                         <option>Marzo 2026</option>
@@ -212,17 +212,17 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="text-xs text-slate-400 mb-1 block">Vencimiento *</label>
-                                    <input type="date" id="ob-duedate" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                                    <label class="text-xs font-semibold text-black mb-1 block">Vencimiento *</label>
+                                    <input type="date" id="ob-duedate" required class="w-full bg-white border border-black rounded-lg p-2 text-black" />
                                 </div>
                             </div>
                             <div>
-                                <label class="text-xs text-slate-400 mb-1 block">Monto (Bs.) *</label>
-                                <input type="text" id="ob-amount" required placeholder="Ej: 1985,36 o 198536" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 font-mono" />
+                                <label class="text-xs font-semibold text-black mb-1 block">Monto (Bs.) *</label>
+                                <input type="text" id="ob-amount" required placeholder="Ej: 1985,36 o 198536" class="w-full bg-white border border-black rounded-lg p-2 text-black font-mono font-bold" />
                             </div>
                             <div>
-                                <label class="text-xs text-slate-400 mb-1 block">Estado</label>
-                                <select id="ob-status" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100">
+                                <label class="text-xs font-semibold text-black mb-1 block">Estado</label>
+                                <select id="ob-status" class="w-full bg-white border border-black rounded-lg p-2 text-black font-medium">
                                     <option>Por pagar</option>
                                     <option>Enviado al cliente</option>
                                     <option>Pagado</option>
@@ -230,85 +230,85 @@
                                 </select>
                             </div>
                             <div class="flex gap-2 pt-2">
-                                <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 rounded-xl transition shadow text-xs">Guardar obligación</button>
-                                <button type="button" onclick="resetObligationForm()" class="bg-slate-700 px-3 py-2 rounded-xl text-xs">Cancelar</button>
+                                <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-xl transition border border-black text-xs">Guardar obligación</button>
+                                <button type="button" onclick="resetObligationForm()" class="bg-black hover:bg-neutral-800 text-white px-3 py-2 rounded-xl text-xs font-semibold border border-black">Cancelar</button>
                             </div>
                         </form>
                     </div>
 
                     <!-- REGISTROS RECIENTES AGRUPADOS POR EMPRESA -->
-                    <div class="lg:col-span-2 bg-slate-800 p-5 rounded-xl border border-slate-700 shadow space-y-4">
-                        <h3 class="text-sm font-semibold mb-2 text-slate-200 border-b border-slate-700 pb-2">Registros recientes (Agrupados por empresa)</h3>
+                    <div class="lg:col-span-2 bg-white p-5 rounded-xl border-2 border-black shadow-sm space-y-4">
+                        <h3 class="text-sm font-bold mb-2 text-black border-b-2 border-black pb-2">Registros recientes (Agrupados por empresa)</h3>
                         <div id="obligations-grouped-list" class="space-y-3"></div>
                     </div>
                 </div>
 
                 <!-- 2. GRUPOS -->
                 <div id="tab-groups" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow h-fit">
-                        <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Nuevo grupo de empresas</h3>
+                    <div class="bg-white p-5 rounded-xl border-2 border-black shadow-sm h-fit">
+                        <h3 class="text-sm font-bold mb-4 text-black border-b-2 border-black pb-2">Nuevo grupo de empresas</h3>
                         <form onsubmit="saveGroup(event)" class="space-y-3 text-sm">
                             <div>
-                                <label class="text-xs text-slate-400 mb-1 block">Nombre del grupo *</label>
-                                <input type="text" id="group-name" required placeholder="Ej: Grupo Empresarial Zulia" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                                <label class="text-xs font-semibold text-black mb-1 block">Nombre del grupo *</label>
+                                <input type="text" id="group-name" required placeholder="Ej: Grupo Empresarial Zulia" class="w-full bg-white border border-black rounded-lg p-2 text-black" />
                             </div>
-                            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl transition shadow">Guardar grupo</button>
+                            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl transition border border-black">Guardar grupo</button>
                         </form>
                     </div>
-                    <div class="md:col-span-2 bg-slate-800 p-5 rounded-xl border border-slate-700 shadow space-y-3">
-                        <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Grupos registrados</h3>
+                    <div class="md:col-span-2 bg-white p-5 rounded-xl border-2 border-black shadow-sm space-y-3">
+                        <h3 class="text-sm font-bold mb-4 text-black border-b-2 border-black pb-2">Grupos registrados</h3>
                         <div id="groups-list" class="space-y-2"></div>
                     </div>
                 </div>
 
                 <!-- 3. CLIENTES -->
                 <div id="tab-directory" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow h-fit">
-                        <h3 id="client-form-title" class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Nuevo cliente</h3>
+                    <div class="bg-white p-5 rounded-xl border-2 border-black shadow-sm h-fit">
+                        <h3 id="client-form-title" class="text-sm font-bold mb-4 text-black border-b-2 border-black pb-2">Nuevo cliente</h3>
                         <form onsubmit="saveClient(event)" class="space-y-3 text-sm">
                             <input type="hidden" id="client-edit-id" />
                             <div>
-                                <label class="text-xs text-slate-400 mb-1 block">RIF *</label>
-                                <input type="text" id="client-rif" required placeholder="J-12345678-9" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                                <label class="text-xs font-semibold text-black mb-1 block">RIF *</label>
+                                <input type="text" id="client-rif" required placeholder="J-12345678-9" class="w-full bg-white border border-black rounded-lg p-2 text-black" />
                             </div>
                             <div>
-                                <label class="text-xs text-slate-400 mb-1 block">Razón social *</label>
-                                <input type="text" id="client-name" required placeholder="Nombre de la empresa" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                                <label class="text-xs font-semibold text-black mb-1 block">Razón social *</label>
+                                <input type="text" id="client-name" required placeholder="Nombre de la empresa" class="w-full bg-white border border-black rounded-lg p-2 text-black" />
                             </div>
                             <div>
-                                <label class="text-xs text-slate-400 mb-1 block">Grupo de empresas</label>
-                                <select id="client-group" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100">
+                                <label class="text-xs font-semibold text-black mb-1 block">Grupo de empresas</label>
+                                <select id="client-group" class="w-full bg-white border border-black rounded-lg p-2 text-black">
                                     <option value="">Sin grupo</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="text-xs text-slate-400 mb-1 block">Teléfono</label>
-                                <input type="text" id="client-phone" placeholder="0414-0000000" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100" />
+                                <label class="text-xs font-semibold text-black mb-1 block">Teléfono</label>
+                                <input type="text" id="client-phone" placeholder="0414-0000000" class="w-full bg-white border border-black rounded-lg p-2 text-black" />
                             </div>
                             <div class="flex gap-2 pt-2">
-                                <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 rounded-xl transition shadow text-xs">Guardar</button>
-                                <button type="button" onclick="resetClientForm()" class="bg-slate-700 px-3 py-2 rounded-xl text-xs">Cancelar</button>
+                                <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-xl transition border border-black text-xs">Guardar</button>
+                                <button type="button" onclick="resetClientForm()" class="bg-black hover:bg-neutral-800 text-white px-3 py-2 rounded-xl text-xs font-semibold border border-black">Cancelar</button>
                             </div>
                         </form>
                     </div>
-                    <div class="md:col-span-2 bg-slate-800 p-5 rounded-xl border border-slate-700 shadow space-y-3">
-                        <h3 class="text-sm font-semibold mb-4 text-slate-200 border-b border-slate-700 pb-2">Directorio activo de clientes</h3>
+                    <div class="md:col-span-2 bg-white p-5 rounded-xl border-2 border-black shadow-sm space-y-3">
+                        <h3 class="text-sm font-bold mb-4 text-black border-b-2 border-black pb-2">Directorio activo de clientes</h3>
                         <div id="clients-list" class="space-y-2"></div>
                     </div>
                 </div>
 
                 <!-- 4. CONSULTAS Y RECIBOS -->
-                <div id="tab-consult" class="hidden bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-700 pb-4">
+                <div id="tab-consult" class="hidden bg-white p-6 rounded-2xl border-2 border-black shadow-sm space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b-2 border-black pb-4">
                         <div>
-                            <label class="text-xs text-slate-400 mb-1 block">Consultar por grupo de empresas</label>
-                            <select id="query-group" onchange="handleGroupQuery(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 text-sm">
+                            <label class="text-xs font-semibold text-black mb-1 block">Consultar por grupo de empresas</label>
+                            <select id="query-group" onchange="handleGroupQuery(this.value)" class="w-full bg-white border border-black rounded-lg p-2 text-black text-sm font-medium">
                                 <option value="">-- Seleccionar grupo --</option>
                             </select>
                         </div>
                         <div>
-                            <label class="text-xs text-slate-400 mb-1 block">O consultar empresa específica</label>
-                            <select id="query-client" onchange="handleClientQuery(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 text-sm">
+                            <label class="text-xs font-semibold text-black mb-1 block">O consultar empresa específica</label>
+                            <select id="query-client" onchange="handleClientQuery(this.value)" class="w-full bg-white border border-black rounded-lg p-2 text-black text-sm font-medium">
                                 <option value="">-- Seleccionar empresa --</option>
                             </select>
                         </div>
@@ -317,10 +317,10 @@
                 </div>
 
                 <!-- 5. CONSULTAS POR PERIODO / MES -->
-                <div id="tab-periods" class="hidden bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow space-y-6">
-                    <div class="border-b border-slate-700 pb-4 max-w-sm">
-                        <label class="text-xs text-slate-400 mb-1 block">Seleccionar periodo (Mes)</label>
-                        <select id="filter-period" onchange="handlePeriodQuery(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 text-sm">
+                <div id="tab-periods" class="hidden bg-white p-6 rounded-2xl border-2 border-black shadow-sm space-y-6">
+                    <div class="border-b-2 border-black pb-4 max-w-sm">
+                        <label class="text-xs font-semibold text-black mb-1 block">Seleccionar periodo (Mes)</label>
+                        <select id="filter-period" onchange="handlePeriodQuery(this.value)" class="w-full bg-white border border-black rounded-lg p-2 text-black text-sm font-medium">
                             <option value="">-- Seleccionar mes --</option>
                             <option>Enero 2026</option>
                             <option>Febrero 2026</option>
@@ -340,11 +340,11 @@
                 </div>
 
                 <!-- 6. PESTAÑA DE ALERTAS Y VENCIDOS -->
-                <div id="tab-alerts" class="hidden bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow space-y-6">
-                    <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
+                <div id="tab-alerts" class="hidden bg-white p-6 rounded-2xl border-2 border-black shadow-sm space-y-6">
+                    <div class="border-b-2 border-black pb-3 flex justify-between items-center">
                         <div>
-                            <h3 class="text-base font-bold text-rose-400">Clientes con saldos vencidos o próximos a vencer</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">Listado detallado de compromisos críticos (vencidos o a 2 días de vencer)</p>
+                            <h3 class="text-base font-bold text-rose-700">Clientes con saldos vencidos o próximos a vencer</h3>
+                            <p class="text-xs text-neutral-700 mt-0.5">Listado detallado de compromisos críticos (vencidos o a 2 días de vencer)</p>
                         </div>
                     </div>
                     <div id="alerts-results" class="space-y-3"></div>
@@ -543,11 +543,11 @@
                 if (!btnEl) return;
 
                 if (t === activeTab) {
-                    btnEl.className = "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-medium transition flex items-center gap-2.5 bg-emerald-600 text-white shadow";
+                    btnEl.className = "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2.5 bg-emerald-600 text-white border border-black";
                 } else if (t === 'alerts' && hasPendingPayments) {
-                    btnEl.className = "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-medium transition flex items-center gap-2.5 bg-rose-600 hover:bg-rose-500 text-white shadow";
+                    btnEl.className = "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2.5 bg-rose-600 hover:bg-rose-700 text-white border border-black";
                 } else {
-                    btnEl.className = "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-medium transition flex items-center gap-2.5 text-slate-300 hover:bg-slate-800/80";
+                    btnEl.className = "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2.5 bg-white text-black border border-black hover:bg-emerald-50";
                 }
             });
 
@@ -782,36 +782,36 @@
             const byCat = groupObligationsByCategory(clientObs);
 
             let html = `
-                <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 space-y-3">
+                <div class="bg-white p-5 rounded-xl border-2 border-black space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="font-bold text-slate-100 text-base">${clientName}</span>
-                        <button onclick="downloadImageReceipt('${clientName}', false)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow">Descargar Recibo (Imagen PNG)</button>
+                        <span class="font-bold text-black text-base">${clientName}</span>
+                        <button onclick="downloadImageReceipt('${clientName}', false)" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition border border-black">Descargar Recibo (Imagen PNG)</button>
                     </div>
                     <div class="space-y-3">
             `;
             if (clientObs.length === 0) {
-                html += `<p class="text-xs text-slate-400 italic">Sin obligaciones pendientes</p>`;
+                html += `<p class="text-xs text-neutral-600 italic">Sin obligaciones pendientes</p>`;
             } else {
                 for (const [catName, catData] of Object.entries(byCat)) {
-                    html += `<div class="space-y-1.5 border-b border-slate-800 pb-2">
-                        <div class="text-xs font-semibold text-emerald-400">${catName}</div>`;
+                    html += `<div class="space-y-1.5 border-b border-neutral-300 pb-2">
+                        <div class="text-xs font-bold text-emerald-800">${catName}</div>`;
                     catData.items.forEach(o => {
                         html += `
-                            <div class="flex justify-between text-slate-300 text-xs pl-2">
+                            <div class="flex justify-between text-black text-xs pl-2">
                                 <span>${o.taxType} (${o.period}) - Vence: ${formatDate(o.dueDate)}</span>
-                                <strong class="font-mono text-emerald-400">Bs. ${o.amountStr}</strong>
+                                <strong class="font-mono text-black">Bs. ${o.amountStr}</strong>
                             </div>
                         `;
                     });
-                    html += `<div class="text-right text-xs font-semibold text-slate-300 pt-1">
-                        Total ${catName}: <span class="font-mono text-emerald-400">Bs. ${formatCurrency(catData.subtotal)}</span>
+                    html += `<div class="text-right text-xs font-bold text-black pt-1">
+                        Total ${catName}: <span class="font-mono text-emerald-800">Bs. ${formatCurrency(catData.subtotal)}</span>
                     </div></div>`;
                 }
             }
             html += `
                     </div>
-                    <div class="text-amber-400 font-bold text-base pt-2 border-t border-slate-800">
-                        TOTAL A PAGAR: Bs. ${formatCurrency(total)}
+                    <div class="text-black font-bold text-base pt-2 border-t-2 border-black">
+                        TOTAL A PAGAR: <span class="font-mono text-emerald-800">Bs. ${formatCurrency(total)}</span>
                     </div>
                 </div>
             `;
@@ -838,9 +838,9 @@
 
             let html = `
                 <div class="space-y-4">
-                    <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-700 pb-2">
-                        <div class="text-base font-bold text-emerald-400">Grupo Corporativo: ${groupName}</div>
-                        <button onclick="downloadImageReceipt('${groupName}', true)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow">Descargar Recibo General del Grupo (PNG)</button>
+                    <div class="flex flex-wrap justify-between items-center gap-2 border-b-2 border-black pb-2">
+                        <div class="text-base font-bold text-emerald-800">Grupo Corporativo: ${groupName}</div>
+                        <button onclick="downloadImageReceipt('${groupName}', true)" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition border border-black">Descargar Recibo General del Grupo (PNG)</button>
                     </div>
             `;
 
@@ -850,34 +850,34 @@
                 const byCat = groupObligationsByCategory(clientObs);
 
                 html += `
-                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 space-y-2">
+                    <div class="bg-white p-4 rounded-xl border-2 border-black space-y-2">
                         <div class="flex flex-wrap justify-between items-center gap-2">
-                            <div class="font-semibold text-slate-100">${client.name}</div>
-                            ${clientObs.length > 0 ? `<button onclick="downloadImageReceipt('${client.name}', false)" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 px-3 py-1 rounded-lg text-[11px] font-medium transition">PNG Empresa</button>` : ''}
+                            <div class="font-bold text-black">${client.name}</div>
+                            ${clientObs.length > 0 ? `<button onclick="downloadImageReceipt('${client.name}', false)" class="bg-black hover:bg-neutral-800 text-white border border-black px-3 py-1 rounded-lg text-[11px] font-semibold transition">PNG Empresa</button>` : ''}
                         </div>
                 `;
                 if (clientObs.length === 0) {
-                    html += `<div class="text-slate-400 italic text-xs">Sin obligaciones pendientes</div>`;
+                    html += `<div class="text-neutral-600 italic text-xs">Sin obligaciones pendientes</div>`;
                 } else {
                     for (const [catName, catData] of Object.entries(byCat)) {
-                        html += `<div class="space-y-1 pl-2 border-l-2 border-slate-700">
-                            <div class="text-xs font-semibold text-emerald-400">${catName}</div>`;
+                        html += `<div class="space-y-1 pl-2 border-l-2 border-black">
+                            <div class="text-xs font-bold text-emerald-800">${catName}</div>`;
                         catData.items.forEach(o => {
                             html += `
-                                <div class="flex justify-between text-slate-300 pl-2 text-xs">
+                                <div class="flex justify-between text-black pl-2 text-xs">
                                     <span>${o.taxType} (${o.period}) - Vence: ${formatDate(o.dueDate)}</span>
-                                    <span class="font-mono text-emerald-400 font-bold">Bs. ${o.amountStr}</span>
+                                    <span class="font-mono text-black font-bold">Bs. ${o.amountStr}</span>
                                 </div>
                             `;
                         });
-                        html += `<div class="text-right text-xs text-slate-300 font-semibold">
-                            Subtotal ${catName}: <span class="font-mono text-emerald-400">Bs. ${formatCurrency(catData.subtotal)}</span>
+                        html += `<div class="text-right text-xs text-black font-bold">
+                            Subtotal ${catName}: <span class="font-mono text-emerald-800">Bs. ${formatCurrency(catData.subtotal)}</span>
                         </div></div>`;
                     }
                 }
                 html += `
-                        <div class="text-right font-bold text-amber-400 pt-2 border-t border-slate-800 text-sm">
-                            Subtotal Empresa: Bs. ${formatCurrency(clientTotal)}
+                        <div class="text-right font-bold text-black pt-2 border-t border-neutral-300 text-sm">
+                            Subtotal Empresa: <span class="font-mono text-emerald-800">Bs. ${formatCurrency(clientTotal)}</span>
                         </div>
                     </div>
                 `;
@@ -885,17 +885,17 @@
 
             let catSummaryHtml = '';
             for (const [catName, catSum] of Object.entries(groupCatTotals)) {
-                catSummaryHtml += `<div class="text-xs text-emerald-200 flex justify-between">
-                    <span>Total ${catName}:</span>
-                    <span class="font-mono font-semibold">Bs. ${formatCurrency(catSum)}</span>
+                catSummaryHtml += `<div class="text-xs text-black flex justify-between">
+                    <span class="font-semibold">Total ${catName}:</span>
+                    <span class="font-mono font-bold">Bs. ${formatCurrency(catSum)}</span>
                 </div>`;
             }
 
             html += `
-                <div class="bg-emerald-950 p-4 rounded-xl border border-emerald-800 space-y-2">
+                <div class="bg-emerald-50 p-4 rounded-xl border-2 border-black space-y-2">
                     ${catSummaryHtml}
-                    <div class="text-right font-bold text-emerald-300 text-base pt-2 border-t border-emerald-800/80">
-                        TOTAL GENERAL DEL GRUPO: Bs. ${formatCurrency(groupGrandTotal)}
+                    <div class="text-right font-bold text-black text-base pt-2 border-t border-black">
+                        TOTAL GENERAL DEL GRUPO: <span class="font-mono text-emerald-800">Bs. ${formatCurrency(groupGrandTotal)}</span>
                     </div>
                 </div>
             </div>
@@ -912,27 +912,27 @@
             const totalPeriod = periodObs.reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
 
             let html = `
-                <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 space-y-3">
-                    <div class="flex justify-between items-center border-b border-slate-700 pb-2">
-                        <span class="font-bold text-emerald-400 text-base">Compromisos del Periodo: ${periodName}</span>
-                        <span class="text-xs text-slate-400">Total Registros: ${periodObs.length}</span>
+                <div class="bg-white p-5 rounded-xl border-2 border-black space-y-3">
+                    <div class="flex justify-between items-center border-b-2 border-black pb-2">
+                        <span class="font-bold text-emerald-800 text-base">Compromisos del Periodo: ${periodName}</span>
+                        <span class="text-xs text-black font-semibold">Total Registros: ${periodObs.length}</span>
                     </div>
                     <div class="space-y-2">
             `;
 
             if (periodObs.length === 0) {
-                html += `<p class="text-xs text-slate-400 italic">No hay obligaciones registradas para este periodo.</p>`;
+                html += `<p class="text-xs text-neutral-600 italic">No hay obligaciones registradas para este periodo.</p>`;
             } else {
                 periodObs.forEach(o => {
                     html += `
-                        <div class="flex justify-between items-center text-slate-300 text-xs border-b border-slate-800 pb-2">
+                        <div class="flex justify-between items-center text-black text-xs border-b border-neutral-300 pb-2">
                             <div>
-                                <strong class="text-slate-100">${o.clientName}</strong>
-                                <div class="text-emerald-400">[${o.category}] ${o.taxType} - Vence: ${formatDate(o.dueDate)}</div>
+                                <strong class="text-black">${o.clientName}</strong>
+                                <div class="text-emerald-800 font-medium">[${o.category}] ${o.taxType} - Vence: ${formatDate(o.dueDate)}</div>
                             </div>
                             <div class="text-right">
-                                <span class="font-mono text-emerald-400 font-bold block">Bs. ${o.amountStr}</span>
-                                <span class="text-[10px] text-amber-400">[${o.status}]</span>
+                                <span class="font-mono text-black font-bold block">Bs. ${o.amountStr}</span>
+                                <span class="text-[10px] text-neutral-700 font-semibold">[${o.status}]</span>
                             </div>
                         </div>
                     `;
@@ -941,8 +941,8 @@
 
             html += `
                     </div>
-                    <div class="text-amber-400 font-bold text-base pt-2 border-t border-slate-800 text-right">
-                        TOTAL MONTO EN EL PERIODO: Bs. ${formatCurrency(totalPeriod)}
+                    <div class="text-black font-bold text-base pt-2 border-t-2 border-black text-right">
+                        TOTAL MONTO EN EL PERIODO: <span class="font-mono text-emerald-800">Bs. ${formatCurrency(totalPeriod)}</span>
                     </div>
                 </div>
             `;
@@ -1048,7 +1048,7 @@
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.strokeStyle = '#111827';
+            ctx.strokeStyle = '#000000';
             ctx.lineWidth = 3;
             ctx.strokeRect(16, 16, canvas.width - 32, canvas.height - 32);
 
@@ -1057,12 +1057,12 @@
             ctx.textAlign = 'center';
             ctx.fillText('LEGAL Y CONTABLE, S.C.', canvas.width / 2, 64);
 
-            ctx.fillStyle = '#374151';
+            ctx.fillStyle = '#000000';
             ctx.font = '14px sans-serif';
             ctx.fillText('Control Tributario y Parafiscal - Detalle de Conceptos por Categoría', canvas.width / 2, 90);
 
-            ctx.strokeStyle = '#9ca3af';
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 1.5;
             ctx.beginPath();
             ctx.moveTo(marginX, 110);
             ctx.lineTo(canvas.width - marginX, 110);
@@ -1080,7 +1080,7 @@
             }
 
             ctx.font = '13px sans-serif';
-            ctx.fillStyle = '#374151';
+            ctx.fillStyle = '#000000';
             ctx.fillText(`Fecha de Emisión: ${formatDate(new Date().toISOString().split('T')[0])}`, marginX, isGroup ? 164 : 184);
 
             ctx.fillStyle = '#000000';
@@ -1092,7 +1092,7 @@
             const drawCompanyCard = (item, cardX, cardY, cardW, cardH) => {
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(cardX, cardY, cardW, cardH);
-                ctx.strokeStyle = '#374151';
+                ctx.strokeStyle = '#000000';
                 ctx.lineWidth = 1.5;
                 ctx.strokeRect(cardX, cardY, cardW, cardH);
 
@@ -1105,7 +1105,7 @@
                 y += 24;
 
                 if (!item.hasObligations) {
-                    ctx.fillStyle = '#4b5563';
+                    ctx.fillStyle = '#000000';
                     ctx.font = 'italic 13px sans-serif';
                     ctx.fillText('Sin obligaciones pendientes', cardX + 28, y);
                     y += 26;
@@ -1123,7 +1123,7 @@
                             const amountWidth = ctx.measureText(amountLabel).width;
                             const maxConceptWidth = cardW - 60 - amountWidth;
 
-                            ctx.fillStyle = '#111827';
+                            ctx.fillStyle = '#000000';
                             ctx.font = '13px sans-serif';
                             ctx.textAlign = 'left';
                             const rawLine = `${o.taxType} | Periodo: ${o.period} | Vence: ${formatDate(o.dueDate)}`;
@@ -1138,7 +1138,7 @@
                             y += 24;
                         });
 
-                        ctx.fillStyle = '#111827';
+                        ctx.fillStyle = '#000000';
                         ctx.font = 'bold 12px sans-serif';
                         ctx.textAlign = 'right';
                         ctx.fillText(`Subtotal ${cat.catName}: Bs. ${formatCurrency(cat.subtotal)}`, cardX + cardW - 18, y);
@@ -1178,10 +1178,10 @@
             }
 
             currentRowY += 4;
-            ctx.fillStyle = '#f3f4f6';
+            ctx.fillStyle = '#ffffff';
             ctx.fillRect(marginX, currentRowY, canvasWidth - marginX * 2, summaryBoxHeight);
-            ctx.strokeStyle = '#111827';
-            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
             ctx.strokeRect(marginX, currentRowY, canvasWidth - marginX * 2, summaryBoxHeight);
 
             let summaryY = currentRowY + 26;
@@ -1192,7 +1192,7 @@
             summaryY += 22;
 
             generalCatEntries.forEach(([catName, catAmount]) => {
-                ctx.fillStyle = '#111827';
+                ctx.fillStyle = '#000000';
                 ctx.font = '14px sans-serif';
                 ctx.textAlign = 'left';
                 ctx.fillText(`${catName}:`, marginX + 24, summaryY);
@@ -1204,8 +1204,8 @@
                 summaryY += 23;
             });
 
-            ctx.strokeStyle = '#6b7280';
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 1.5;
             ctx.beginPath();
             ctx.moveTo(marginX + 24, summaryY - 8);
             ctx.lineTo(canvasWidth - marginX - 24, summaryY - 8);
@@ -1261,31 +1261,31 @@
             if (alertsBadge) {
                 alertsBadge.textContent = `${alertItems.length} alerta(s)`;
                 alertsBadge.className = alertItems.length > 0
-                    ? "text-[11px] bg-rose-950 text-rose-400 border border-rose-800/70 px-2.5 py-0.5 rounded-full font-mono"
-                    : "text-[11px] bg-slate-900 text-slate-300 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono";
+                    ? "text-[11px] bg-rose-600 text-white border border-black px-2.5 py-0.5 rounded-full font-mono font-bold"
+                    : "text-[11px] bg-neutral-100 text-black border border-black px-2.5 py-0.5 rounded-full font-mono font-bold";
             }
 
             const alertsResultsEl = document.getElementById('alerts-results');
             if (alertsResultsEl) {
                 if (alertItems.length === 0) {
-                    alertsResultsEl.innerHTML = `<div class="bg-slate-900 p-4 rounded-xl border border-slate-700 text-slate-400 text-xs italic">No hay clientes con saldos vencidos ni próximos a vencer en este momento. ¡Todo en orden!</div>`;
+                    alertsResultsEl.innerHTML = `<div class="bg-white p-4 rounded-xl border border-black text-neutral-700 text-xs italic">No hay clientes con saldos vencidos ni próximos a vencer en este momento. ¡Todo en orden!</div>`;
                 } else {
                     let alertsHtml = '';
                     alertItems.forEach(item => {
-                        const badgeColor = item.alertType === 'Vencido' ? 'bg-rose-950 text-rose-400 border-rose-800' : 'bg-amber-950 text-amber-400 border-amber-800';
+                        const badgeColor = item.alertType === 'Vencido' ? 'bg-rose-600 text-white border-black' : 'bg-amber-300 text-black border-black';
                         alertsHtml += `
-                            <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 flex justify-between items-center text-sm">
+                            <div class="bg-white p-4 rounded-xl border-2 border-black flex justify-between items-center text-sm">
                                 <div>
                                     <div class="flex items-center gap-2">
-                                        <strong class="text-slate-100 text-base">${item.clientName}</strong>
-                                        <span class="text-[10px] px-2 py-0.5 rounded border ${badgeColor} font-semibold">${item.alertType}</span>
+                                        <strong class="text-black text-base">${item.clientName}</strong>
+                                        <span class="text-[10px] px-2 py-0.5 rounded border ${badgeColor} font-bold">${item.alertType}</span>
                                     </div>
-                                    <div class="text-emerald-400 text-xs mt-1">[${item.category}] ${item.taxType} - Periodo: ${item.period}</div>
-                                    <div class="text-xs text-slate-400 mt-0.5">Vencimiento: ${formatDate(item.dueDate)} | Estado actual: <span class="text-slate-200">${item.status}</span></div>
+                                    <div class="text-emerald-800 font-semibold text-xs mt-1">[${item.category}] ${item.taxType} - Periodo: ${item.period}</div>
+                                    <div class="text-xs text-neutral-700 mt-0.5">Vencimiento: ${formatDate(item.dueDate)} | Estado actual: <span class="text-black font-semibold">${item.status}</span></div>
                                 </div>
                                 <div class="text-right">
-                                    <span class="font-mono text-amber-400 font-bold text-base block">Bs. ${item.amountStr}</span>
-                                    <button onclick="editObligation(${item.id})" class="mt-2 bg-blue-950 text-blue-400 border border-blue-900 px-3 py-1 rounded text-xs hover:bg-blue-900">Editar</button>
+                                    <span class="font-mono text-black font-bold text-base block">Bs. ${item.amountStr}</span>
+                                    <button onclick="editObligation(${item.id})" class="mt-2 bg-black text-white border border-black px-3 py-1 rounded-lg text-xs font-semibold hover:bg-neutral-800">Editar</button>
                                 </div>
                             </div>
                         `;
@@ -1309,29 +1309,29 @@
                 let groupHtml = '';
                 for(const [clientName, items] of Object.entries(mapByClient)) {
                     groupHtml += `
-                        <details class="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden group">
-                            <summary class="p-3.5 bg-slate-900 hover:bg-slate-800/80 cursor-pointer flex justify-between items-center text-sm font-semibold select-none">
+                        <details class="bg-white border-2 border-black rounded-xl overflow-hidden group">
+                            <summary class="p-3.5 bg-neutral-50 hover:bg-emerald-50 cursor-pointer flex justify-between items-center text-sm font-bold select-none">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-emerald-400">🏢</span>
-                                    <span class="text-slate-100">${clientName}</span>
-                                    <span class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700">${items.length} registro(s)</span>
+                                    <span class="text-emerald-700">🏢</span>
+                                    <span class="text-black">${clientName}</span>
+                                    <span class="text-xs bg-emerald-100 text-emerald-950 px-2 py-0.5 rounded-full border border-black font-mono">${items.length} registro(s)</span>
                                 </div>
-                                <span class="text-xs text-slate-400 group-open:rotate-180 transition">▼ Ver detalles</span>
+                                <span class="text-xs text-black font-semibold group-open:rotate-180 transition">▼ Ver detalles</span>
                             </summary>
-                            <div class="p-3 bg-slate-950/50 border-t border-slate-800 space-y-2">
+                            <div class="p-3 bg-white border-t-2 border-black space-y-2">
                     `;
                     items.forEach(item => {
                         groupHtml += `
-                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 flex justify-between items-center text-xs">
+                            <div class="bg-neutral-50 p-3 rounded-lg border border-black flex justify-between items-center text-xs">
                                 <div>
-                                    <div class="text-emerald-400 font-semibold">[${item.category}] ${item.taxType}</div>
-                                    <div class="text-slate-400">Periodo: ${item.period} | Vence: ${formatDate(item.dueDate)}</div>
-                                    <div class="text-amber-400 font-mono mt-0.5 font-bold">Bs. ${item.amountStr} <span class="text-slate-400 font-normal">[${item.status}]</span></div>
+                                    <div class="text-emerald-800 font-bold">[${item.category}] ${item.taxType}</div>
+                                    <div class="text-neutral-700">Periodo: ${item.period} | Vence: ${formatDate(item.dueDate)}</div>
+                                    <div class="text-black font-mono mt-0.5 font-bold">Bs. ${item.amountStr} <span class="text-neutral-700 font-sans font-semibold">[${item.status}]</span></div>
                                 </div>
                                 <div class="flex gap-1.5">
-                                    <button onclick="markAsPaid(${item.id})" class="bg-emerald-950 text-emerald-400 border border-emerald-900 px-2.5 py-1 rounded text-[11px] hover:bg-emerald-900">Pagado</button>
-                                    <button onclick="editObligation(${item.id})" class="bg-blue-950 text-blue-400 border border-blue-900 px-2.5 py-1 rounded text-[11px] hover:bg-blue-900">Editar</button>
-                                    <button onclick="deleteObligation(${item.id})" class="bg-rose-950 text-rose-400 border border-rose-900 px-2.5 py-1 rounded text-[11px] hover:bg-rose-900">Borrar</button>
+                                    <button onclick="markAsPaid(${item.id})" class="bg-emerald-600 text-white border border-black px-2.5 py-1 rounded-lg text-[11px] font-semibold hover:bg-emerald-700">Pagado</button>
+                                    <button onclick="editObligation(${item.id})" class="bg-black text-white border border-black px-2.5 py-1 rounded-lg text-[11px] font-semibold hover:bg-neutral-800">Editar</button>
+                                    <button onclick="deleteObligation(${item.id})" class="bg-rose-600 text-white border border-black px-2.5 py-1 rounded-lg text-[11px] font-semibold hover:bg-rose-700">Borrar</button>
                                 </div>
                             </div>
                         `;
@@ -1341,18 +1341,18 @@
                         </details>
                     `;
                 }
-                groupedListEl.innerHTML = groupHtml || '<p class="text-xs text-slate-400 italic">No hay registros pendientes recientes.</p>';
+                groupedListEl.innerHTML = groupHtml || '<p class="text-xs text-neutral-600 italic">No hay registros pendientes recientes.</p>';
             }
 
             const gList = document.getElementById('groups-list');
             if(gList) {
                 gList.innerHTML = groups.map(g => `
-                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 flex justify-between items-center text-sm">
+                    <div class="bg-white p-4 rounded-xl border-2 border-black flex justify-between items-center text-sm">
                         <div>
-                            <span class="font-semibold text-slate-100 text-base">${g.name}</span>
-                            <div class="text-xs text-slate-400 mt-0.5">Empresas asociadas: ${clients.filter(c => c.group === g.name).length}</div>
+                            <span class="font-bold text-black text-base">${g.name}</span>
+                            <div class="text-xs text-neutral-700 mt-0.5">Empresas asociadas: <span class="font-bold text-emerald-800">${clients.filter(c => c.group === g.name).length}</span></div>
                         </div>
-                        <button onclick="deleteGroup(${g.id})" class="bg-rose-950 text-rose-400 border border-rose-900 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-rose-900">Eliminar grupo</button>
+                        <button onclick="deleteGroup(${g.id})" class="bg-rose-600 text-white border border-black px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-rose-700">Eliminar grupo</button>
                     </div>
                 `).join('');
             }
@@ -1368,14 +1368,14 @@
             const cList = document.getElementById('clients-list');
             if(cList) {
                 cList.innerHTML = clients.map(c => `
-                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 flex justify-between items-center text-sm">
+                    <div class="bg-white p-4 rounded-xl border-2 border-black flex justify-between items-center text-sm">
                         <div>
-                            <div class="font-semibold text-slate-100">${c.name}</div>
-                            <div class="text-emerald-400 text-xs font-mono">${c.rif} | <span class="text-slate-400">${c.group || 'Sin grupo'}</span></div>
+                            <div class="font-bold text-black">${c.name}</div>
+                            <div class="text-emerald-800 text-xs font-mono font-bold">${c.rif} | <span class="text-neutral-700 font-sans font-semibold">${c.group || 'Sin grupo'}</span></div>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="editClient(${c.id})" class="bg-blue-950 text-blue-400 border border-blue-900 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-900">Editar</button>
-                            <button onclick="deleteClient(${c.id})" class="bg-rose-950 text-rose-400 border border-rose-900 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-rose-900">Borrar</button>
+                            <button onclick="editClient(${c.id})" class="bg-black text-white border border-black px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-neutral-800">Editar</button>
+                            <button onclick="deleteClient(${c.id})" class="bg-rose-600 text-white border border-black px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-rose-700">Borrar</button>
                         </div>
                     </div>
                 `).join('');
