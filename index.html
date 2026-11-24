@@ -6,25 +6,10 @@
     <title>Legal y Contable, S.C. - Control Tributario</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-100/80 text-slate-800 font-sans min-h-screen flex flex-col justify-center items-center p-4 antialiased">
+<body class="bg-slate-100/80 text-slate-800 font-sans min-h-screen flex flex-col p-4 antialiased">
 
-    <!-- PANTALLA DE LOGIN / CONTRASEÑA -->
-    <div id="auth-screen" class="w-full max-w-sm bg-white p-7 rounded-2xl border border-slate-200/90 shadow-sm space-y-5">
-        <div class="text-center space-y-1">
-            <h1 class="text-lg font-bold text-slate-900 tracking-tight">Legal y Contable, S.C.</h1>
-            <p class="text-xs text-slate-500">Ingrese su contraseña de acceso</p>
-        </div>
-        <form onsubmit="verifyPin(event)" class="space-y-3.5">
-            <div>
-                <input type="password" id="access-pin" required placeholder="Escriba su contraseña..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition" />
-            </div>
-            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl transition shadow-sm text-sm">Entrar al Sistema</button>
-        </form>
-        <p id="pin-error" class="text-xs text-rose-600 font-medium text-center hidden">Contraseña incorrecta. Intente nuevamente.</p>
-    </div>
-
-    <!-- APLICACIÓN PRINCIPAL -->
-    <div id="main-app" class="hidden w-full max-w-6xl bg-slate-50/70 min-h-[88vh] rounded-2xl border border-slate-200/90 shadow-md overflow-hidden flex flex-col md:flex-row">
+    <!-- APLICACIÓN PRINCIPAL (ACCESO DIRECTO SIN CONTRASEÑA) -->
+    <div id="main-app" class="w-full max-w-6xl mx-auto bg-slate-50/70 min-h-[88vh] rounded-2xl border border-slate-200/90 shadow-md overflow-hidden flex flex-col md:flex-row">
         
         <!-- MENÚ LATERAL IZQUIERDO (OCULTO EN MENÚ PRINCIPAL, VISIBLE AL ELEGIR UNA OPCIÓN) -->
         <aside id="sidebar-nav" class="hidden w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-slate-200/80 flex flex-col justify-between shrink-0">
@@ -73,14 +58,10 @@
                 </nav>
             </div>
 
-            <div class="p-4 border-t border-slate-100 space-y-2">
+            <div class="p-4 border-t border-slate-100">
                 <div id="sync-status" class="text-[11px] text-emerald-700 font-medium bg-emerald-50/80 border border-emerald-200/70 px-3 py-2 rounded-xl text-center">
                     ☁️ Sincronizado con Firebase
                 </div>
-                <button onclick="lockSystem()" class="w-full bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 px-3 py-2 rounded-xl transition text-xs font-medium flex items-center justify-center gap-2">
-                    <span>🔒</span>
-                    <span>Bloquear Sistema</span>
-                </button>
             </div>
         </aside>
 
@@ -98,9 +79,6 @@
                     </span>
                     <button onclick="switchTab('menu')" id="btn-back-menu" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-1.5 rounded-xl text-xs font-medium transition">
                         ← Volver al Menú
-                    </button>
-                    <button onclick="lockSystem()" id="btn-home-lock" title="Bloquear sistema" class="bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 px-3.5 py-1.5 rounded-xl transition text-xs font-medium">
-                        🔒 Bloquear
                     </button>
                 </div>
             </header>
@@ -332,7 +310,7 @@
                             <option>Agosto 2026</option>
                             <option>Septiembre 2026</option>
                             <option>Octubre 2026</option>
-                            <option>Noviembre 2026</option>
+                            <option selected>Noviembre 2026</option>
                             <option>Diciembre 2026</option>
                         </select>
                     </div>
@@ -353,7 +331,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT LÓGICO Y AUTENTICACIÓN -->
+    <!-- SCRIPT LÓGICO Y SINCRONIZACIÓN -->
     <script>
         const PIN_SECRETO = "Cont1316"; 
         const FIREBASE_URL = "https://control-tributario-e5840-default-rtdb.firebaseio.com";
@@ -418,32 +396,6 @@
             const homeEl = document.getElementById('home-sync-status');
             if (sideEl) sideEl.innerHTML = text;
             if (homeEl) homeEl.innerHTML = text;
-        }
-
-        function verifyPin(e) {
-            e.preventDefault();
-            const inputElement = document.getElementById('access-pin');
-            const errorMsg = document.getElementById('pin-error');
-
-            if (inputElement && inputElement.value.trim() === PIN_SECRETO) {
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.body.classList.remove('justify-center', 'items-center');
-                document.getElementById('main-app').classList.remove('hidden');
-                updateTaxOptions();
-                loadFromFirebase();
-            } else {
-                errorMsg.classList.remove('hidden');
-                if(inputElement) inputElement.value = '';
-            }
-        }
-
-        function lockSystem() {
-            document.getElementById('main-app').classList.add('hidden');
-            document.body.classList.add('justify-center', 'items-center');
-            document.getElementById('auth-screen').classList.remove('hidden');
-            const inputElement = document.getElementById('access-pin');
-            if(inputElement) inputElement.value = '';
-            document.getElementById('pin-error').classList.add('hidden');
         }
 
         async function loadFromFirebase() {
@@ -559,7 +511,6 @@
 
             const backBtn = document.getElementById('btn-back-menu');
             const homeSync = document.getElementById('home-sync-status');
-            const homeLock = document.getElementById('btn-home-lock');
 
             if (backBtn) {
                 if (isMenu) {
@@ -573,13 +524,6 @@
                     homeSync.classList.remove('hidden');
                 } else {
                     homeSync.classList.add('hidden');
-                }
-            }
-            if (homeLock) {
-                if (isMenu) {
-                    homeLock.classList.remove('hidden');
-                } else {
-                    homeLock.classList.add('hidden');
                 }
             }
         }
@@ -1411,6 +1355,10 @@
                 queryClientEl.innerHTML = queryClientOptions;
             }
         }
+
+        updateTaxOptions();
+        renderAll();
+        loadFromFirebase();
     </script>
 </body>
 </html>
