@@ -343,8 +343,8 @@
                 <div id="tab-alerts" class="hidden bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs space-y-6">
                     <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
                         <div>
-                            <h3 class="text-base font-bold text-rose-700">Clientes con saldos vencidos o próximos a vencer</h3>
-                            <p class="text-xs text-slate-500 mt-0.5">Listado detallado de compromisos críticos (vencidos o a 2 días de vencer)</p>
+                            <h3 class="text-base font-bold text-slate-900">Vencimientos y alertas</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">Obligaciones vencidas o a 2 días de vencer</p>
                         </div>
                     </div>
                     <div id="alerts-results" class="space-y-3"></div>
@@ -526,6 +526,12 @@
             return formatCurrency(num);
         }
 
+        function statusPillClass(status) {
+            if (status === 'Vencido') return 'bg-rose-50 text-rose-700 border-rose-200/80';
+            if (status === 'Enviado al cliente') return 'bg-blue-50/80 text-blue-700 border-blue-200/70';
+            return 'bg-slate-100 text-slate-600 border-slate-200/80';
+        }
+
         function updateNavTabStyles() {
             const sidebarEl = document.getElementById('sidebar-nav');
             const isMenu = activeTab === 'menu';
@@ -545,7 +551,7 @@
                 if (t === activeTab) {
                     btnEl.className = "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2.5 bg-blue-600 text-white shadow-xs";
                 } else if (t === 'alerts' && hasPendingPayments) {
-                    btnEl.className = "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80";
+                    btnEl.className = "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2.5 bg-rose-50/80 hover:bg-rose-100/80 text-rose-700 border border-rose-200/70";
                 } else {
                     btnEl.className = "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-medium transition flex items-center gap-2.5 text-slate-600 hover:bg-slate-100";
                 }
@@ -782,36 +788,42 @@
             const byCat = groupObligationsByCategory(clientObs);
 
             let html = `
-                <div class="bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-3">
-                    <div class="flex justify-between items-center">
+                <div class="bg-slate-50/60 p-5 rounded-2xl border border-slate-200/80 space-y-4">
+                    <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-200/70 pb-3">
                         <span class="font-bold text-slate-900 text-base">${clientName}</span>
-                        <button onclick="downloadImageReceipt('${clientName}', false)" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow-xs">Descargar Recibo (Imagen PNG)</button>
+                        <button onclick="downloadImageReceipt('${clientName}', false)" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow-xs">Descargar Recibo (PNG)</button>
                     </div>
-                    <div class="space-y-3">
+                    <div class="space-y-3.5">
             `;
             if (clientObs.length === 0) {
-                html += `<p class="text-xs text-slate-500 italic">Sin obligaciones pendientes</p>`;
+                html += `<p class="text-xs text-slate-400 italic">Sin obligaciones pendientes</p>`;
             } else {
                 for (const [catName, catData] of Object.entries(byCat)) {
-                    html += `<div class="space-y-1.5 border-b border-slate-200/80 pb-2">
-                        <div class="text-xs font-semibold text-blue-700">${catName}</div>`;
+                    html += `<div class="bg-white p-3.5 rounded-xl border border-slate-200/70 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-semibold text-slate-700">${catName}</span>
+                            <span class="font-mono font-semibold text-slate-800">Bs. ${formatCurrency(catData.subtotal)}</span>
+                        </div>
+                        <div class="divide-y divide-slate-100">`;
                     catData.items.forEach(o => {
                         html += `
-                            <div class="flex justify-between text-slate-700 text-xs pl-2">
-                                <span>${o.taxType} (${o.period}) - Vence: ${formatDate(o.dueDate)}</span>
-                                <strong class="font-mono text-slate-900">Bs. ${o.amountStr}</strong>
+                            <div class="py-2 flex justify-between items-start gap-3 text-xs">
+                                <div>
+                                    <div class="font-medium text-slate-900">${o.taxType}</div>
+                                    <div class="text-[11px] text-slate-500 mt-0.5">${o.period} · Vence ${formatDate(o.dueDate)}</div>
+                                </div>
+                                <span class="font-mono font-semibold text-slate-900 shrink-0">Bs. ${o.amountStr}</span>
                             </div>
                         `;
                     });
-                    html += `<div class="text-right text-xs font-semibold text-slate-700 pt-1">
-                        Total ${catName}: <span class="font-mono text-blue-700">Bs. ${formatCurrency(catData.subtotal)}</span>
-                    </div></div>`;
+                    html += `</div></div>`;
                 }
             }
             html += `
                     </div>
-                    <div class="text-slate-900 font-bold text-base pt-2 border-t border-slate-200">
-                        TOTAL A PAGAR: <span class="font-mono text-blue-700">Bs. ${formatCurrency(total)}</span>
+                    <div class="flex justify-between items-center text-slate-900 font-bold text-sm pt-2 border-t border-slate-200/80">
+                        <span class="text-slate-600 font-semibold">Total pendiente</span>
+                        <span class="font-mono text-base text-blue-700">Bs. ${formatCurrency(total)}</span>
                     </div>
                 </div>
             `;
@@ -838,9 +850,9 @@
 
             let html = `
                 <div class="space-y-4">
-                    <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-2.5">
-                        <div class="text-base font-bold text-slate-900">Grupo Corporativo: <span class="text-blue-700">${groupName}</span></div>
-                        <button onclick="downloadImageReceipt('${groupName}', true)" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow-xs">Descargar Recibo General del Grupo (PNG)</button>
+                    <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-3">
+                        <div class="text-base font-bold text-slate-900">${groupName}</div>
+                        <button onclick="downloadImageReceipt('${groupName}', true)" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow-xs">Descargar Recibo del Grupo (PNG)</button>
                     </div>
             `;
 
@@ -850,52 +862,55 @@
                 const byCat = groupObligationsByCategory(clientObs);
 
                 html += `
-                    <div class="bg-slate-50/70 p-4 rounded-2xl border border-slate-200 space-y-2">
+                    <div class="bg-slate-50/60 p-4 rounded-2xl border border-slate-200/80 space-y-2.5">
                         <div class="flex flex-wrap justify-between items-center gap-2">
-                            <div class="font-semibold text-slate-900">${client.name}</div>
-                            ${clientObs.length > 0 ? `<button onclick="downloadImageReceipt('${client.name}', false)" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1 rounded-lg text-[11px] font-medium transition">PNG Empresa</button>` : ''}
+                            <div class="font-semibold text-slate-900 text-sm">${client.name}</div>
+                            <div class="flex items-center gap-2.5">
+                                <span class="font-mono text-xs font-semibold text-slate-700">Bs. ${formatCurrency(clientTotal)}</span>
+                                ${clientObs.length > 0 ? `<button onclick="downloadImageReceipt('${client.name}', false)" class="bg-white hover:bg-slate-100 text-slate-600 border border-slate-200/80 px-2.5 py-1 rounded-lg text-[11px] font-medium transition">PNG</button>` : ''}
+                            </div>
                         </div>
                 `;
                 if (clientObs.length === 0) {
-                    html += `<div class="text-slate-500 italic text-xs">Sin obligaciones pendientes</div>`;
+                    html += `<div class="text-slate-400 italic text-xs">Sin obligaciones pendientes</div>`;
                 } else {
                     for (const [catName, catData] of Object.entries(byCat)) {
-                        html += `<div class="space-y-1 pl-2.5 border-l-2 border-blue-400">
-                            <div class="text-xs font-semibold text-blue-700">${catName}</div>`;
+                        html += `<div class="bg-white p-3 rounded-xl border border-slate-200/70 space-y-1.5">
+                            <div class="flex justify-between items-center text-[11px] font-semibold text-slate-500">
+                                <span>${catName}</span>
+                                <span class="font-mono text-slate-700">Bs. ${formatCurrency(catData.subtotal)}</span>
+                            </div>`;
                         catData.items.forEach(o => {
                             html += `
-                                <div class="flex justify-between text-slate-700 pl-2 text-xs">
-                                    <span>${o.taxType} (${o.period}) - Vence: ${formatDate(o.dueDate)}</span>
-                                    <span class="font-mono text-slate-900 font-semibold">Bs. ${o.amountStr}</span>
+                                <div class="flex justify-between items-start gap-2 text-slate-700 text-xs pt-1 border-t border-slate-100">
+                                    <div>
+                                        <span class="font-medium text-slate-800">${o.taxType}</span>
+                                        <span class="block text-[11px] text-slate-400">${o.period} · Vence ${formatDate(o.dueDate)}</span>
+                                    </div>
+                                    <span class="font-mono text-slate-900 font-semibold shrink-0">Bs. ${o.amountStr}</span>
                                 </div>
                             `;
                         });
-                        html += `<div class="text-right text-xs text-slate-700 font-semibold">
-                            Subtotal ${catName}: <span class="font-mono text-blue-700">Bs. ${formatCurrency(catData.subtotal)}</span>
-                        </div></div>`;
+                        html += `</div>`;
                     }
                 }
-                html += `
-                        <div class="text-right font-semibold text-slate-900 pt-2 border-t border-slate-200/80 text-sm">
-                            Subtotal Empresa: <span class="font-mono text-blue-700">Bs. ${formatCurrency(clientTotal)}</span>
-                        </div>
-                    </div>
-                `;
+                html += `</div>`;
             });
 
             let catSummaryHtml = '';
             for (const [catName, catSum] of Object.entries(groupCatTotals)) {
-                catSummaryHtml += `<div class="text-xs text-slate-700 flex justify-between">
-                    <span class="font-medium">Total ${catName}:</span>
-                    <span class="font-mono font-semibold text-slate-900">Bs. ${formatCurrency(catSum)}</span>
+                catSummaryHtml += `<div class="text-xs text-slate-600 flex justify-between">
+                    <span>${catName}</span>
+                    <span class="font-mono font-medium text-slate-800">Bs. ${formatCurrency(catSum)}</span>
                 </div>`;
             }
 
             html += `
-                <div class="bg-blue-50/70 p-4 rounded-2xl border border-blue-200/80 space-y-2">
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/90 space-y-2">
                     ${catSummaryHtml}
-                    <div class="text-right font-bold text-slate-900 text-base pt-2 border-t border-blue-200/80">
-                        TOTAL GENERAL DEL GRUPO: <span class="font-mono text-blue-700">Bs. ${formatCurrency(groupGrandTotal)}</span>
+                    <div class="flex justify-between items-center font-bold text-slate-900 text-sm pt-2 border-t border-slate-200/80">
+                        <span>Total del grupo</span>
+                        <span class="font-mono text-base text-blue-700">Bs. ${formatCurrency(groupGrandTotal)}</span>
                     </div>
                 </div>
             </div>
@@ -912,27 +927,28 @@
             const totalPeriod = periodObs.reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
 
             let html = `
-                <div class="bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-3">
-                    <div class="flex justify-between items-center border-b border-slate-200/80 pb-2.5">
-                        <span class="font-bold text-slate-900 text-base">Compromisos del Periodo: <span class="text-blue-700">${periodName}</span></span>
-                        <span class="text-xs text-slate-600 font-medium">Total Registros: ${periodObs.length}</span>
+                <div class="bg-slate-50/60 p-5 rounded-2xl border border-slate-200/80 space-y-3">
+                    <div class="flex justify-between items-center border-b border-slate-200/70 pb-2.5">
+                        <span class="font-bold text-slate-900 text-base">${periodName}</span>
+                        <span class="text-xs text-slate-500 font-medium">${periodObs.length} registro(s)</span>
                     </div>
-                    <div class="space-y-2">
+                    <div class="divide-y divide-slate-200/60">
             `;
 
             if (periodObs.length === 0) {
-                html += `<p class="text-xs text-slate-500 italic">No hay obligaciones registradas para este periodo.</p>`;
+                html += `<p class="text-xs text-slate-400 italic py-2">No hay obligaciones registradas para este periodo.</p>`;
             } else {
                 periodObs.forEach(o => {
                     html += `
-                        <div class="flex justify-between items-center text-slate-700 text-xs border-b border-slate-200/70 pb-2">
+                        <div class="py-2.5 flex justify-between items-start gap-3 text-xs">
                             <div>
-                                <strong class="text-slate-900">${o.clientName}</strong>
-                                <div class="text-blue-700 font-medium">[${o.category}] ${o.taxType} - Vence: ${formatDate(o.dueDate)}</div>
+                                <div class="font-semibold text-slate-900">${o.clientName}</div>
+                                <div class="text-slate-700 mt-0.5">${o.taxType}</div>
+                                <div class="text-[11px] text-slate-400 mt-0.5">${o.category} · Vence ${formatDate(o.dueDate)}</div>
                             </div>
-                            <div class="text-right">
+                            <div class="text-right shrink-0 space-y-1">
                                 <span class="font-mono text-slate-900 font-semibold block">Bs. ${o.amountStr}</span>
-                                <span class="text-[10px] text-slate-500 font-medium">[${o.status}]</span>
+                                <span class="inline-block text-[10px] px-2 py-0.5 rounded-md border font-medium ${statusPillClass(o.status)}">${o.status}</span>
                             </div>
                         </div>
                     `;
@@ -941,8 +957,9 @@
 
             html += `
                     </div>
-                    <div class="text-slate-900 font-bold text-base pt-2 border-t border-slate-200 text-right">
-                        TOTAL MONTO EN EL PERIODO: <span class="font-mono text-blue-700">Bs. ${formatCurrency(totalPeriod)}</span>
+                    <div class="flex justify-between items-center text-slate-900 font-bold text-sm pt-2 border-t border-slate-200/80">
+                        <span class="text-slate-600 font-semibold">Total del periodo</span>
+                        <span class="font-mono text-base text-blue-700">Bs. ${formatCurrency(totalPeriod)}</span>
                     </div>
                 </div>
             `;
@@ -1261,31 +1278,31 @@
             if (alertsBadge) {
                 alertsBadge.textContent = `${alertItems.length} alerta(s)`;
                 alertsBadge.className = alertItems.length > 0
-                    ? "text-[11px] bg-rose-100 text-rose-700 px-2.5 py-0.5 rounded-full font-mono font-semibold"
+                    ? "text-[11px] bg-rose-50 text-rose-700 border border-rose-200/80 px-2.5 py-0.5 rounded-full font-mono font-semibold"
                     : "text-[11px] bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full font-mono font-medium";
             }
 
             const alertsResultsEl = document.getElementById('alerts-results');
             if (alertsResultsEl) {
                 if (alertItems.length === 0) {
-                    alertsResultsEl.innerHTML = `<div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-slate-500 text-xs italic">No hay clientes con saldos vencidos ni próximos a vencer en este momento. ¡Todo en orden!</div>`;
+                    alertsResultsEl.innerHTML = `<div class="bg-slate-50/70 p-4 rounded-2xl border border-slate-200/80 text-slate-500 text-xs italic">No hay clientes con saldos vencidos ni próximos a vencer en este momento.</div>`;
                 } else {
                     let alertsHtml = '';
                     alertItems.forEach(item => {
-                        const badgeColor = item.alertType === 'Vencido' ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-amber-100 text-amber-800 border-amber-200';
+                        const badgeColor = item.alertType === 'Vencido' ? 'bg-rose-50 text-rose-700 border-rose-200/80' : 'bg-amber-50 text-amber-800 border-amber-200/80';
                         alertsHtml += `
-                            <div class="bg-slate-50/70 p-4 rounded-2xl border border-slate-200 flex justify-between items-center text-sm">
-                                <div>
+                            <div class="bg-slate-50/60 p-4 rounded-2xl border border-slate-200/80 flex justify-between items-start gap-4 text-sm">
+                                <div class="space-y-1">
                                     <div class="flex items-center gap-2">
-                                        <strong class="text-slate-900 text-base">${item.clientName}</strong>
-                                        <span class="text-[10px] px-2 py-0.5 rounded-md border ${badgeColor} font-semibold">${item.alertType}</span>
+                                        <strong class="text-slate-900 font-semibold">${item.clientName}</strong>
+                                        <span class="text-[10px] px-2 py-0.5 rounded-md border ${badgeColor} font-medium">${item.alertType}</span>
                                     </div>
-                                    <div class="text-blue-700 font-medium text-xs mt-1">[${item.category}] ${item.taxType} - Periodo: ${item.period}</div>
-                                    <div class="text-xs text-slate-500 mt-0.5">Vencimiento: ${formatDate(item.dueDate)} | Estado actual: <span class="text-slate-700 font-medium">${item.status}</span></div>
+                                    <div class="text-slate-700 text-xs font-medium">${item.taxType}</div>
+                                    <div class="text-[11px] text-slate-400">${item.period} · Vence ${formatDate(item.dueDate)} · ${item.status}</div>
                                 </div>
-                                <div class="text-right">
-                                    <span class="font-mono text-slate-900 font-bold text-base block">Bs. ${item.amountStr}</span>
-                                    <button onclick="editObligation(${item.id})" class="mt-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1 rounded-lg text-xs font-medium transition">Editar</button>
+                                <div class="text-right shrink-0 space-y-2">
+                                    <span class="font-mono text-slate-900 font-semibold text-sm block">Bs. ${item.amountStr}</span>
+                                    <button onclick="editObligation(${item.id})" class="bg-white hover:bg-slate-100 text-slate-600 border border-slate-200/80 px-2.5 py-1 rounded-lg text-[11px] font-medium transition">Editar</button>
                                 </div>
                             </div>
                         `;
@@ -1308,30 +1325,36 @@
 
                 let groupHtml = '';
                 for(const [clientName, items] of Object.entries(mapByClient)) {
+                    const clientSubtotal = items.reduce((acc, item) => acc + parseToNumber(item.amountStr), 0);
                     groupHtml += `
-                        <details class="bg-slate-50/70 border border-slate-200 rounded-2xl overflow-hidden group">
-                            <summary class="p-3.5 bg-white hover:bg-slate-50 cursor-pointer flex justify-between items-center text-sm font-semibold select-none">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-blue-600">🏢</span>
-                                    <span class="text-slate-900">${clientName}</span>
-                                    <span class="text-xs bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-full font-mono font-medium">${items.length} registro(s)</span>
+                        <details class="bg-slate-50/60 border border-slate-200/80 rounded-2xl overflow-hidden group">
+                            <summary class="p-3.5 bg-white hover:bg-slate-50/80 cursor-pointer flex justify-between items-center gap-2 text-sm font-semibold select-none">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="text-slate-900 truncate">${clientName}</span>
+                                    <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-mono font-medium shrink-0">${items.length}</span>
                                 </div>
-                                <span class="text-xs text-slate-500 font-medium group-open:rotate-180 transition">▼ Ver detalles</span>
+                                <div class="flex items-center gap-3 shrink-0">
+                                    <span class="font-mono text-xs text-slate-700">Bs. ${formatCurrency(clientSubtotal)}</span>
+                                    <span class="text-[11px] text-slate-400 font-normal group-open:rotate-180 transition">▼</span>
+                                </div>
                             </summary>
-                            <div class="p-3 bg-slate-50/70 border-t border-slate-200/80 space-y-2">
+                            <div class="p-3 bg-slate-50/50 border-t border-slate-200/70 space-y-2">
                     `;
                     items.forEach(item => {
                         groupHtml += `
-                            <div class="bg-white p-3 rounded-xl border border-slate-200/80 flex justify-between items-center text-xs">
-                                <div>
-                                    <div class="text-blue-700 font-semibold">[${item.category}] ${item.taxType}</div>
-                                    <div class="text-slate-500">Periodo: ${item.period} | Vence: ${formatDate(item.dueDate)}</div>
-                                    <div class="text-slate-900 font-mono mt-0.5 font-semibold">Bs. ${item.amountStr} <span class="text-slate-500 font-sans font-normal">[${item.status}]</span></div>
+                            <div class="bg-white p-3 rounded-xl border border-slate-200/70 flex flex-wrap justify-between items-start gap-3 text-xs">
+                                <div class="space-y-0.5">
+                                    <div class="text-slate-900 font-semibold">${item.taxType}</div>
+                                    <div class="text-[11px] text-slate-400">${item.period} · Vence ${formatDate(item.dueDate)}</div>
+                                    <div class="pt-1 flex items-center gap-2">
+                                        <span class="text-slate-900 font-mono font-semibold">Bs. ${item.amountStr}</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded-md border font-medium ${statusPillClass(item.status)}">${item.status}</span>
+                                    </div>
                                 </div>
-                                <div class="flex gap-1.5">
-                                    <button onclick="markAsPaid(${item.id})" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 px-2.5 py-1 rounded-lg text-[11px] font-medium transition">Pagado</button>
-                                    <button onclick="editObligation(${item.id})" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-medium transition">Editar</button>
-                                    <button onclick="deleteObligation(${item.id})" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 px-2.5 py-1 rounded-lg text-[11px] font-medium transition">Borrar</button>
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    <button onclick="markAsPaid(${item.id})" class="bg-emerald-50/90 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/70 px-2.5 py-1 rounded-lg text-[11px] font-medium transition">Pagado</button>
+                                    <button onclick="editObligation(${item.id})" class="bg-slate-100/80 hover:bg-slate-200/70 text-slate-600 px-2 py-1 rounded-lg text-[11px] font-medium transition">Editar</button>
+                                    <button onclick="deleteObligation(${item.id})" class="text-slate-400 hover:text-rose-600 px-1.5 py-1 rounded-lg text-[11px] font-medium transition">Borrar</button>
                                 </div>
                             </div>
                         `;
@@ -1341,18 +1364,18 @@
                         </details>
                     `;
                 }
-                groupedListEl.innerHTML = groupHtml || '<p class="text-xs text-slate-500 italic">No hay registros pendientes recientes.</p>';
+                groupedListEl.innerHTML = groupHtml || '<p class="text-xs text-slate-400 italic">No hay registros pendientes recientes.</p>';
             }
 
             const gList = document.getElementById('groups-list');
             if(gList) {
                 gList.innerHTML = groups.map(g => `
-                    <div class="bg-slate-50/70 p-4 rounded-2xl border border-slate-200 flex justify-between items-center text-sm">
+                    <div class="bg-slate-50/60 p-4 rounded-2xl border border-slate-200/80 flex justify-between items-center text-sm">
                         <div>
-                            <span class="font-semibold text-slate-900 text-base">${g.name}</span>
-                            <div class="text-xs text-slate-500 mt-0.5">Empresas asociadas: <span class="font-semibold text-blue-700">${clients.filter(c => c.group === g.name).length}</span></div>
+                            <span class="font-semibold text-slate-900">${g.name}</span>
+                            <div class="text-xs text-slate-500 mt-0.5">${clients.filter(c => c.group === g.name).length} empresa(s) asociada(s)</div>
                         </div>
-                        <button onclick="deleteGroup(${g.id})" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 px-3 py-1.5 rounded-xl text-xs font-medium transition">Eliminar grupo</button>
+                        <button onclick="deleteGroup(${g.id})" class="text-slate-500 hover:text-rose-700 hover:bg-rose-50 px-2.5 py-1.5 rounded-xl text-xs font-medium transition">Eliminar</button>
                     </div>
                 `).join('');
             }
@@ -1368,14 +1391,14 @@
             const cList = document.getElementById('clients-list');
             if(cList) {
                 cList.innerHTML = clients.map(c => `
-                    <div class="bg-slate-50/70 p-4 rounded-2xl border border-slate-200 flex justify-between items-center text-sm">
+                    <div class="bg-slate-50/60 p-4 rounded-2xl border border-slate-200/80 flex justify-between items-center gap-3 text-sm">
                         <div>
                             <div class="font-semibold text-slate-900">${c.name}</div>
-                            <div class="text-blue-700 text-xs font-mono font-medium">${c.rif} | <span class="text-slate-500 font-sans">${c.group || 'Sin grupo'}</span></div>
+                            <div class="text-slate-500 text-xs mt-0.5"><span class="font-mono text-slate-700">${c.rif}</span> · ${c.group || 'Sin grupo'}</div>
                         </div>
-                        <div class="flex gap-2">
-                            <button onclick="editClient(${c.id})" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-medium transition">Editar</button>
-                            <button onclick="deleteClient(${c.id})" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 px-3 py-1.5 rounded-xl text-xs font-medium transition">Borrar</button>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button onclick="editClient(${c.id})" class="bg-white hover:bg-slate-100 text-slate-600 border border-slate-200/80 px-2.5 py-1 rounded-xl text-xs font-medium transition">Editar</button>
+                            <button onclick="deleteClient(${c.id})" class="text-slate-400 hover:text-rose-600 px-2 py-1 rounded-xl text-xs font-medium transition">Borrar</button>
                         </div>
                     </div>
                 `).join('');
