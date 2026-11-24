@@ -250,7 +250,7 @@
                 </div>
 
                 <!-- 2. GRUPOS -->
-                <div id="tab-groups" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div id="tab-groups" class="hidden grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-slate-950/70 p-5 rounded-2xl border border-slate-800 h-fit">
                         <h3 class="text-sm font-semibold mb-4 text-white border-b border-slate-800 pb-2.5">Nuevo grupo de empresas</h3>
                         <form onsubmit="saveGroup(event)" class="space-y-3 text-sm">
@@ -268,7 +268,7 @@
                 </div>
 
                 <!-- 3. CLIENTES -->
-                <div id="tab-directory" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div id="tab-directory" class="hidden grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-slate-950/70 p-5 rounded-2xl border border-slate-800 h-fit">
                         <h3 id="client-form-title" class="text-sm font-semibold mb-4 text-white border-b border-slate-800 pb-2.5">Nuevo cliente</h3>
                         <form onsubmit="saveClient(event)" class="space-y-3 text-sm">
@@ -770,6 +770,53 @@
             return formatCurrency(num);
         }
 
+        function openMailtoLink(toEmail, subject, body) {
+            const url = `mailto:${encodeURIComponent(toEmail || '')}?subject=${encodeURIComponent(subject || '')}&body=${encodeURIComponent(body || '')}`;
+            window.location.href = url;
+        }
+
+        function sendSingleObligationEmail(obligationId) {
+            const ob = obligations.find(o => o.id === obligationId);
+            if (!ob) return;
+            const matchedClient = resolveMatchingClient(ob.rif, ob.clientName);
+            const email = (matchedClient?.email || '').trim();
+            const subject = `Control Tributario - ${ob.clientName} (${ob.taxType})`;
+            const body =
+                `Cliente: ${ob.clientName}\n` +
+                `RIF: ${ob.rif || matchedClient?.rif || 'S/N'}\n` +
+                `Tributo: ${ob.taxType}\n` +
+                `Categoría: ${ob.category || 'N/A'}\n` +
+                `Periodo: ${ob.period || 'N/A'}\n` +
+                `Vencimiento: ${formatDate(ob.dueDate)}\n` +
+                `Monto: Bs. ${ob.amountStr || '0,00'}\n` +
+                `Estado: ${ob.status || 'Por pagar'}\n\n` +
+                `Saludos,\nLegal y Contable, S.C.`;
+            openMailtoLink(email, subject, body);
+        }
+
+        function sendSingleClientEmail(clientName) {
+            if (!clientName) return;
+            const clientObs = obligations.filter(o => o.clientName === clientName && o.status !== 'Pagado');
+            if (clientObs.length === 0) {
+                alert(`"${clientName}" no tiene obligaciones pendientes por enviar.`);
+                return;
+            }
+            const matchedClient = resolveMatchingClient('', clientName);
+            const email = (matchedClient?.email || '').trim();
+            const total = clientObs.reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
+            const lines = clientObs.map(o =>
+                `- ${o.taxType} | Periodo: ${o.period || 'N/A'} | Vence: ${formatDate(o.dueDate)} | Bs. ${o.amountStr || '0,00'}`
+            );
+            const subject = `Control Tributario - ${clientName} (${clientObs.length} obligación(es))`;
+            const body =
+                `Cliente: ${clientName}\n` +
+                `RIF: ${matchedClient?.rif || clientObs[0]?.rif || 'S/N'}\n\n` +
+                `${lines.join('\n')}\n\n` +
+                `Total pendiente: Bs. ${formatCurrency(total)}\n\n` +
+                `Saludos,\nLegal y Contable, S.C.`;
+            openMailtoLink(email, subject, body);
+        }
+
         function updateNavTabStyles() {
             const sidebarEl = document.getElementById('sidebar-nav');
             const isMenu = activeTab === 'menu';
@@ -1249,8 +1296,7 @@
         function triggerConsolidatedMailto(encodedDispatch) {
             try {
                 const dispatch = JSON.parse(decodeURIComponent(encodedDispatch));
-                const url = `mailto:${encodeURIComponent(dispatch.to || '')}?subject=${encodeURIComponent(dispatch.subject || '')}&body=${encodeURIComponent(dispatch.body || '')}`;
-                window.location.href = url;
+                openMailtoLink(dispatch.to || '', dispatch.subject || '', dispatch.body || '');
             } catch (err) {
                 console.error("Error al abrir correo consolidado:", err);
             }
@@ -2164,7 +2210,10 @@
                                     <span class="text-white truncate">${clientName}</span>
                                     <span class="text-[11px] bg-slate-900 text-slate-300 border border-slate-700 px-2 py-0.5 rounded-full font-mono font-medium shrink-0">${items.length}</span>
                                 </div>
-                                <div class="flex items-center gap-2.5 shrink-0">
+                                <div class="flex items-center gap-2 shrink-0 flex-wrap">
+                                    <button type="button" onclick="event.preventDefault(); event.stopPropagation(); sendSingleClientEmail(decodeURIComponent('${safeClientAttr}'))" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 px-2.5 py-1 rounded-lg text-[11px] font-medium transition">
+                                        ✉️ Email cliente
+                                    </button>
                                     <button type="button" onclick="event.preventDefault(); event.stopPropagation(); markAllClientObligationsAsPaid(decodeURIComponent('${safeClientAttr}'))" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-lg text-[11px] font-medium transition">
                                         Pagar todo
                                     </button>
@@ -2184,8 +2233,9 @@
                                         <span class="text-white font-mono font-semibold">Bs. ${item.amountStr}</span>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-1.5 shrink-0">
-                                    <button onclick="markAsPaid(${item.id})" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 px-2.5 py-1 rounded-lg text-[11px] font-medium transition">Pagado</button>
+                                <div class="flex items-center gap-1.5 shrink-0 flex-wrap">
+                                    <button type="button" onclick="sendSingleObligationEmail(${item.id})" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 px-2.5 py-1 rounded-lg text-[11px] font-medium transition">✉️ Email</button>
+                                    <button onclick="markAsPaid(${item.id})" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-lg text-[11px] font-medium transition">Pagado</button>
                                     <button onclick="editObligation(${item.id})" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2 py-1 rounded-lg text-[11px] font-medium transition">Editar</button>
                                     <button onclick="deleteObligation(${item.id})" class="text-slate-400 hover:text-white px-1.5 py-1 rounded-lg text-[11px] font-medium transition">Borrar</button>
                                 </div>
