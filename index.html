@@ -110,7 +110,7 @@
                                 <span id="menu-pending-badge" class="text-[11px] bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono font-medium">0 pendiente(s)</span>
                             </div>
                             <div class="text-sm font-semibold text-white">Registrar Obligación</div>
-                            <p class="text-xs text-slate-400 leading-relaxed">Cargar nuevos tributos (SENIAT, municipales o parafiscales) y ver registros agrupados.</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">Cargar nuevos tributos (SENIAT, ISLR anual, municipales o parafiscales).</p>
                         </button>
 
                         <button onclick="switchTab('groups')" class="text-left bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 p-5 rounded-2xl transition group space-y-2">
@@ -128,7 +128,7 @@
                                 <span id="menu-clients-badge" class="text-[11px] bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono font-medium">0 cliente(s)</span>
                             </div>
                             <div class="text-sm font-semibold text-white">Directorio de Clientes</div>
-                            <p class="text-xs text-slate-400 leading-relaxed">Administrar RIF, razones sociales, teléfonos y asignación de grupos.</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">Administrar RIF, razones sociales, tipo de contribuyente, teléfonos y grupos.</p>
                         </button>
 
                         <button onclick="switchTab('consult')" class="text-left bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 p-5 rounded-2xl transition group space-y-2">
@@ -172,13 +172,15 @@
                             </div>
                             <div class="relative">
                                 <label class="text-xs font-medium text-slate-300 mb-1 block">Razón social o palabra clave *</label>
-                                <input type="text" id="ob-client" required oninput="autofillByName(this.value)" onfocus="autofillByName(this.value)" placeholder="Ej: el rincon o c&g" autocomplete="off" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none transition" />
+                                <input type="text" id="ob-client" required oninput="autofillByName(this.value)" onchange="updateTaxOptions()" onfocus="autofillByName(this.value)" placeholder="Ej: el rincon o c&g" autocomplete="off" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none transition" />
                                 <div id="client-suggestions" class="hidden mt-1.5 bg-slate-900 border border-slate-700 rounded-xl overflow-hidden divide-y divide-slate-800 max-h-44 overflow-y-auto shadow-lg"></div>
+                                <div id="ob-taxpayer-badge" class="mt-1.5 text-[11px] text-slate-400">Tipo de contribuyente: <span class="text-slate-200 font-medium">SPNE - Sujeto Pasivo No Especial</span></div>
                             </div>
                             <div>
                                 <label class="text-xs font-medium text-slate-300 mb-1 block">Categoría</label>
                                 <select id="ob-category" onchange="updateTaxOptions()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white text-xs font-medium focus:border-blue-500 focus:outline-none transition">
                                     <option>Impuestos Nacionales (SENIAT)</option>
+                                    <option>ISLR (Anual)</option>
                                     <option>Impuestos Municipales</option>
                                     <option>Parafiscales</option>
                                 </select>
@@ -270,6 +272,13 @@
                                 <input type="text" id="client-name" required placeholder="Nombre de la empresa" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none transition" />
                             </div>
                             <div>
+                                <label class="text-xs font-medium text-slate-300 mb-1 block">Tipo de contribuyente</label>
+                                <select id="client-taxpayer-type" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white text-xs font-medium focus:border-blue-500 focus:outline-none transition">
+                                    <option value="SPNE - Sujeto Pasivo No Especial" selected>SPNE - Sujeto Pasivo No Especial</option>
+                                    <option value="SPE - Sujeto Pasivo Especial">SPE - Sujeto Pasivo Especial</option>
+                                </select>
+                            </div>
+                            <div>
                                 <label class="text-xs font-medium text-slate-300 mb-1 block">Grupo de empresas</label>
                                 <select id="client-group" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white focus:border-blue-500 focus:outline-none transition">
                                     <option value="">Sin grupo</option>
@@ -352,26 +361,37 @@
         const PIN_SECRETO = "Cont1316"; 
         const FIREBASE_URL = "https://control-tributario-e5840-default-rtdb.firebaseio.com";
 
+        const TAXPAYER_SPNE = "SPNE - Sujeto Pasivo No Especial";
+        const TAXPAYER_SPE = "SPE - Sujeto Pasivo Especial";
+
         const moduleMeta = {
             menu: { title: "Menú Principal", subtitle: "Seleccione la operación que desea realizar" },
             dashboard: { title: "Registrar Obligación", subtitle: "Registro y gestión de obligaciones tributarias y parafiscales" },
             groups: { title: "Verificar Grupos", subtitle: "Administración y consulta de grupos corporativos" },
-            directory: { title: "Directorio de Clientes", subtitle: "Registro y edición de clientes y RIF" },
+            directory: { title: "Directorio de Clientes", subtitle: "Registro y edición de clientes, RIF y tipo de contribuyente" },
             consult: { title: "Recibos y Consultas", subtitle: "Consulta por grupo o empresa y descarga de recibos PNG" },
             periods: { title: "Filtro por Periodo / Mes", subtitle: "Revisión de compromisos agrupados por mes" },
             alerts: { title: "Alertas y Vencimientos", subtitle: "Compromisos vencidos o próximos a vencer" }
         };
 
+        const seniatSpeTaxes = [
+            "RIVA - Retenciones de IVA",
+            "Anticipo ISLR (quincenal)",
+            "IGTF - Impuesto a las Grandes Transacciones Financieras",
+            "Contribución a las Pensiones"
+        ];
+
+        const seniatSpneTaxes = [
+            "IVA - Impuesto al Valor Agregado",
+            "RISLR - Retenciones de ISLR",
+            "Contribución a las Pensiones"
+        ];
+
         const taxCatalog = {
-            "Impuestos Nacionales (SENIAT)": [
-                "Anticipo ISLR (quincenal)",
-                "Contribución a las Pensiones",
-                "IGTF - Impuesto a las Grandes Transacciones Financieras",
-                "IVA - Impuesto al Valor Agregado",
-                "ISLR - Impuesto Sobre La Renta",
-                "ISLR declarado por anticipado",
-                "RIVA - Retenciones de IVA",
-                "RISLR - Retenciones de ISLR"
+            "ISLR (Anual)": [
+                "ISLR - Declaración Definitiva Anual",
+                "ISLR - Estimación de Rentas (Anual)",
+                "ISLR - Porción / Cuota Anual"
             ],
             "Impuestos Municipales": [
                 "ISAE - Impuesto Sobre Actividad Económica",
@@ -395,17 +415,26 @@
         ];
 
         let clients = JSON.parse(localStorage.getItem('lc_clients_native')) || [
-            { id: 1, rif: 'J-12345678-9', name: 'Comercial El Carmen, C.A.', group: 'Grupo Empresarial Zulia', phone: '0414-6123456' },
-            { id: 2, rif: 'J-98765432-1', name: 'Inversiones Falcon, F.P.', group: 'Consorcio Comercial', phone: '0424-9876543' }
+            { id: 1, rif: 'J-12345678-9', name: 'Comercial El Carmen, C.A.', taxpayerType: TAXPAYER_SPE, group: 'Grupo Empresarial Zulia', phone: '0414-6123456' },
+            { id: 2, rif: 'J-98765432-1', name: 'Inversiones Falcon, F.P.', taxpayerType: TAXPAYER_SPNE, group: 'Consorcio Comercial', phone: '0424-9876543' }
         ];
 
         let obligations = JSON.parse(localStorage.getItem('lc_obligations_native')) || [
-            { id: 1, clientName: 'Comercial El Carmen, C.A.', rif: 'J-12345678-9', group: 'Grupo Empresarial Zulia', category: 'Impuestos Nacionales (SENIAT)', taxType: 'IVA - Impuesto al Valor Agregado', period: 'Noviembre 2026', dueDate: '2026-11-18', amountStr: '1.985,36', status: 'Por pagar' },
-            { id: 2, clientName: 'Comercial El Carmen, C.A.', rif: 'J-12345678-9', group: 'Grupo Empresarial Zulia', category: 'Impuestos Nacionales (SENIAT)', taxType: 'IVA - Impuesto al Valor Agregado', period: 'Diciembre 2026', dueDate: '2026-12-18', amountStr: '1.985,36', status: 'Por pagar' }
+            { id: 1, clientName: 'Comercial El Carmen, C.A.', rif: 'J-12345678-9', group: 'Grupo Empresarial Zulia', category: 'Impuestos Nacionales (SENIAT)', taxType: 'RIVA - Retenciones de IVA', period: 'Noviembre 2026', dueDate: '2026-11-18', amountStr: '1.985,36', status: 'Por pagar' },
+            { id: 2, clientName: 'Inversiones Falcon, F.P.', rif: 'J-98765432-1', group: 'Consorcio Comercial', category: 'Impuestos Nacionales (SENIAT)', taxType: 'IVA - Impuesto al Valor Agregado', period: 'Noviembre 2026', dueDate: '2026-11-24', amountStr: '1.985,36', status: 'Por pagar' }
         ];
 
         let activeTab = 'menu';
         let hasPendingPayments = false;
+
+        function normalizeTaxpayerType(val) {
+            if (!val) return TAXPAYER_SPNE;
+            const upper = String(val).toUpperCase();
+            if (upper.startsWith("SPE") || upper.includes("ESPECIAL") && !upper.includes("NO ESPECIAL")) {
+                return TAXPAYER_SPE;
+            }
+            return TAXPAYER_SPNE;
+        }
 
         function setSyncLabel(text) {
             const sideEl = document.getElementById('sync-status');
@@ -421,17 +450,24 @@
                     const remoteData = await res.json();
                     if (remoteData) {
                         if (remoteData.groups) groups = remoteData.groups;
-                        if (remoteData.clients) clients = remoteData.clients;
+                        if (remoteData.clients) {
+                            clients = remoteData.clients.map(c => ({
+                                ...c,
+                                taxpayerType: normalizeTaxpayerType(c.taxpayerType)
+                            }));
+                        }
                         if (remoteData.obligations) obligations = remoteData.obligations;
                     }
                 }
                 saveToLocalStorage();
                 renderAll();
+                updateTaxOptions();
                 setSyncLabel("☁️ Sincronizado con Firebase");
             } catch (err) {
                 console.warn("Modo offline o error al conectar con Firebase.", err);
                 setSyncLabel("⚡ Modo Local (Offline)");
                 renderAll();
+                updateTaxOptions();
             }
         }
 
@@ -555,17 +591,47 @@
             updateNavTabStyles();
         }
 
-        function updateTaxOptions() {
-            const cat = document.getElementById('ob-category').value;
+        function getCurrentClientTaxpayerType() {
+            const rifVal = document.getElementById('ob-rif')?.value || '';
+            const nameVal = document.getElementById('ob-client')?.value || '';
+            const matched = resolveMatchingClient(rifVal, nameVal);
+            return matched ? normalizeTaxpayerType(matched.taxpayerType) : TAXPAYER_SPNE;
+        }
+
+        function updateTaxpayerBadge(taxpayerType) {
+            const badgeEl = document.getElementById('ob-taxpayer-badge');
+            if (!badgeEl) return;
+            const isSpe = taxpayerType === TAXPAYER_SPE;
+            badgeEl.innerHTML = `Tipo de contribuyente: <span class="${isSpe ? 'text-amber-300 font-semibold' : 'text-slate-200 font-medium'}">${taxpayerType}</span>`;
+        }
+
+        function updateTaxOptions(preserveSelectedTax = '') {
+            const catEl = document.getElementById('ob-category');
             const select = document.getElementById('ob-tax');
-            if(!select) return;
+            if (!catEl || !select) return;
+
+            const cat = catEl.value;
+            const taxpayerType = getCurrentClientTaxpayerType();
+            updateTaxpayerBadge(taxpayerType);
+
+            let optionsList = [];
+            if (cat === "Impuestos Nacionales (SENIAT)") {
+                optionsList = taxpayerType === TAXPAYER_SPE ? seniatSpeTaxes : seniatSpneTaxes;
+            } else {
+                optionsList = taxCatalog[cat] || [];
+            }
+
             select.innerHTML = '';
-            (taxCatalog[cat] || []).forEach(opt => {
+            optionsList.forEach(opt => {
                 const el = document.createElement('option');
                 el.value = opt;
                 el.textContent = opt;
                 select.appendChild(el);
             });
+
+            if (preserveSelectedTax && optionsList.includes(preserveSelectedTax)) {
+                select.value = preserveSelectedTax;
+            }
         }
 
         function normalizeSearchText(str) {
@@ -628,11 +694,15 @@
             document.getElementById('ob-rif').value = found.rif || '';
             document.getElementById('ob-client').value = found.name || '';
             hideClientSuggestions();
+            updateTaxOptions();
         }
 
         function autofillByRif(val) {
             const cleanVal = (val || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-            if (!cleanVal) return;
+            if (!cleanVal) {
+                updateTaxOptions();
+                return;
+            }
 
             const found = clients.find(c => (c.rif || '').toLowerCase().replace(/[^a-z0-9]/g, '') === cleanVal)
                 || clients.find(c => (c.rif || '').toLowerCase().replace(/[^a-z0-9]/g, '').includes(cleanVal));
@@ -641,6 +711,7 @@
                 document.getElementById('ob-client').value = found.name;
                 hideClientSuggestions();
             }
+            updateTaxOptions();
         }
 
         function autofillByName(val) {
@@ -650,12 +721,14 @@
 
             if (!trimmed || !box) {
                 hideClientSuggestions();
+                updateTaxOptions();
                 return;
             }
 
             const matches = findClientsByQuery(trimmed);
             if (matches.length === 0) {
                 hideClientSuggestions();
+                updateTaxOptions();
                 return;
             }
 
@@ -663,13 +736,18 @@
                 rifInput.value = matches[0].rif || rifInput.value;
             }
 
-            box.innerHTML = matches.slice(0, 6).map(c => `
-                <button type="button" onclick="selectClientSuggestion(${c.id})" class="w-full text-left px-3 py-2 hover:bg-slate-800 transition flex justify-between items-center gap-2 text-xs">
-                    <span class="font-semibold text-white truncate">${c.name}</span>
-                    <span class="font-mono text-[11px] text-slate-400 shrink-0">${c.rif || 'S/N'}</span>
-                </button>
-            `).join('');
+            box.innerHTML = matches.slice(0, 6).map(c => {
+                const tType = normalizeTaxpayerType(c.taxpayerType);
+                const shortTag = tType.startsWith("SPE") ? "SPE" : "SPNE";
+                return `
+                    <button type="button" onclick="selectClientSuggestion(${c.id})" class="w-full text-left px-3 py-2 hover:bg-slate-800 transition flex justify-between items-center gap-2 text-xs">
+                        <span class="font-semibold text-white truncate">${c.name} <span class="text-[10px] font-normal text-slate-400">[${shortTag}]</span></span>
+                        <span class="font-mono text-[11px] text-slate-400 shrink-0">${c.rif || 'S/N'}</span>
+                    </button>
+                `;
+            }).join('');
             box.classList.remove('hidden');
+            updateTaxOptions();
         }
 
         document.addEventListener('click', (e) => {
@@ -734,8 +812,7 @@
                 document.getElementById('ob-client').value = o.clientName || '';
                 hideClientSuggestions();
                 document.getElementById('ob-category').value = o.category || 'Impuestos Nacionales (SENIAT)';
-                updateTaxOptions();
-                document.getElementById('ob-tax').value = o.taxType || '';
+                updateTaxOptions(o.taxType || '');
                 document.getElementById('ob-period').value = o.period || 'Noviembre 2026';
                 document.getElementById('ob-duedate').value = o.dueDate || '';
                 document.getElementById('ob-amount').value = o.amountStr || '';
@@ -792,16 +869,18 @@
             const id = document.getElementById('client-edit-id').value;
             const rif = document.getElementById('client-rif').value;
             const name = document.getElementById('client-name').value;
+            const taxpayerType = normalizeTaxpayerType(document.getElementById('client-taxpayer-type').value);
             const group = document.getElementById('client-group').value;
             const phone = document.getElementById('client-phone').value;
 
             if (id) {
-                clients = clients.map(c => c.id == id ? { ...c, rif, name, group, phone } : c);
+                clients = clients.map(c => c.id == id ? { ...c, rif, name, taxpayerType, group, phone } : c);
             } else {
-                clients.push({ id: Date.now(), rif, name, group, phone });
+                clients.push({ id: Date.now(), rif, name, taxpayerType, group, phone });
             }
             saveData();
             resetClientForm();
+            updateTaxOptions();
         }
 
         function editClient(id) {
@@ -810,6 +889,7 @@
                 document.getElementById('client-edit-id').value = c.id;
                 document.getElementById('client-rif').value = c.rif;
                 document.getElementById('client-name').value = c.name;
+                document.getElementById('client-taxpayer-type').value = normalizeTaxpayerType(c.taxpayerType);
                 document.getElementById('client-group').value = c.group;
                 document.getElementById('client-phone').value = c.phone;
                 document.getElementById('client-form-title').innerText = 'Editar Cliente';
@@ -827,6 +907,7 @@
             document.getElementById('client-edit-id').value = '';
             document.getElementById('client-rif').value = '';
             document.getElementById('client-name').value = '';
+            document.getElementById('client-taxpayer-type').value = TAXPAYER_SPNE;
             document.getElementById('client-group').value = '';
             document.getElementById('client-phone').value = '';
             document.getElementById('client-form-title').innerText = 'Nuevo Cliente';
@@ -1447,18 +1528,25 @@
 
             const cList = document.getElementById('clients-list');
             if(cList) {
-                cList.innerHTML = clients.map(c => `
-                    <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex justify-between items-center gap-3 text-sm">
-                        <div>
-                            <div class="font-semibold text-white">${c.name}</div>
-                            <div class="text-slate-400 text-xs mt-0.5"><span class="font-mono text-slate-200">${c.rif}</span> · ${c.group || 'Sin grupo'}</div>
+                cList.innerHTML = clients.map(c => {
+                    const tType = normalizeTaxpayerType(c.taxpayerType);
+                    const shortLabel = tType.startsWith("SPE") ? "SPE" : "SPNE";
+                    return `
+                        <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex justify-between items-center gap-3 text-sm">
+                            <div>
+                                <div class="font-semibold text-white flex flex-wrap items-center gap-2">
+                                    <span>${c.name}</span>
+                                    <span class="text-[10px] bg-slate-950 text-slate-200 border border-slate-700 px-2 py-0.5 rounded-full font-medium">${shortLabel}</span>
+                                </div>
+                                <div class="text-slate-400 text-xs mt-0.5"><span class="font-mono text-slate-200">${c.rif}</span> · ${tType} · ${c.group || 'Sin grupo'}</div>
+                            </div>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <button onclick="editClient(${c.id})" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded-xl text-xs font-medium transition">Editar</button>
+                                <button onclick="deleteClient(${c.id})" class="text-slate-400 hover:text-white px-2 py-1 rounded-xl text-xs font-medium transition">Borrar</button>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-1.5 shrink-0">
-                            <button onclick="editClient(${c.id})" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded-xl text-xs font-medium transition">Editar</button>
-                            <button onclick="deleteClient(${c.id})" class="text-slate-400 hover:text-white px-2 py-1 rounded-xl text-xs font-medium transition">Borrar</button>
-                        </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             }
 
             const queryClientOptions = '<option value="">-- Seleccionar empresa --</option>' + clients.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
