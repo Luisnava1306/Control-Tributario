@@ -375,6 +375,7 @@
                             <p class="text-xs text-slate-400 mt-0.5">Recordatorios de calendario SPE / DPP y obligaciones vencidas o a 2 días de vencer</p>
                         </div>
                     </div>
+                    <div id="grouped-mail-dispatch-bar" class="space-y-2"></div>
                     <div id="calendar-reminders-results" class="space-y-3"></div>
                     <div id="alerts-results" class="space-y-3"></div>
                 </div>
@@ -1024,6 +1025,8 @@
                                     clientId: client.id,
                                     rif: client.rif,
                                     clientName: client.name,
+                                    group: client.group || '',
+                                    clientEmail: client.email || '',
                                     category: 'Impuestos Nacionales (SENIAT)',
                                     taxType: taxName,
                                     period: periodLabel,
@@ -1050,6 +1053,8 @@
                                 clientId: client.id,
                                 rif: client.rif,
                                 clientName: client.name,
+                                group: client.group || '',
+                                clientEmail: client.email || '',
                                 category: 'Impuestos Nacionales (SENIAT)',
                                 taxType: dppTax,
                                 period: periodLabel,
@@ -1062,6 +1067,131 @@
             });
 
             return reminders.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+        }
+
+        /**
+         * Consolida items en UN SOLO correo por Grupo (si tiene `group`)
+         * o por cliente individual (si no tiene `group`).
+         */
+        function buildConsolidatedDispatchPayload(items) {
+            const clientMap = new Map();
+            clients.forEach(c => {
+                clientMap.set(String(c.id), c);
+                if (c.name) clientMap.set(normalizeSearchText(c.name), c);
+            });
+
+            const groupsBucket = new Map();
+            const soloBucket = new Map();
+
+            items.forEach(item => {
+                const clientObj =
+                    (item.clientId && clientMap.get(String(item.clientId))) ||
+                    (item.clientName && clientMap.get(normalizeSearchText(item.clientName))) ||
+                    null;
+
+                const groupName = (item.group || clientObj?.group || '').trim();
+                const email = (item.clientEmail || clientObj?.email || '').trim();
+
+                if (groupName) {
+                    if (!groupsBucket.has(groupName)) {
+                        groupsBucket.set(groupName, {
+                            isGroup: true,
+                            label: groupName,
+                            emails: new Set(),
+                            items: []
+                        });
+                    }
+                    const entry = groupsBucket.get(groupName);
+                    if (email) entry.emails.add(email);
+                    entry.items.push(item);
+                } else {
+                    const soloKey = item.clientName || 'Cliente sin nombre';
+                    if (!soloBucket.has(soloKey)) {
+                        soloBucket.set(soloKey, {
+                            isGroup: false,
+                            label: soloKey,
+                            emails: new Set(),
+                            items: []
+                        });
+                    }
+                    const entry = soloBucket.get(soloKey);
+                    if (email) entry.emails.add(email);
+                    entry.items.push(item);
+                }
+            });
+
+            const dispatches = [];
+
+            groupsBucket.forEach(entry => {
+                const byCompany = {};
+                let totalAmount = 0;
+
+                entry.items.forEach(it => {
+                    const compKey = it.clientName || 'Empresa';
+                    if (!byCompany[compKey]) byCompany[compKey] = [];
+                    byCompany[compKey].push(it);
+                    totalAmount += parseToNumber(it.amountStr);
+                });
+
+                const companyBlocks = Object.entries(byCompany).map(([compName, compItems]) => {
+                    const lines = compItems.map(o =>
+                        `  - ${o.taxType} | Periodo: ${o.period || 'N/A'} | Vence: ${formatDate(o.dueDate)}${o.amountStr ? ` | Bs. ${o.amountStr}` : ''}`
+                    );
+                    return `Empresa: ${compName}\n${lines.join('\n')}`;
+                });
+
+                const body =
+                    `Grupo Corporativo: ${entry.label}\n` +
+                    `Empresas incluidas (${Object.keys(byCompany).length}): ${Object.keys(byCompany).join(', ')}\n\n` +
+                    `${companyBlocks.join('\n\n')}\n\n` +
+                    (totalAmount > 0 ? `Total acumulado del grupo: Bs. ${formatCurrency(totalAmount)}\n\n` : '\n') +
+                    `Saludos,\nLegal y Contable, S.C.`;
+
+                dispatches.push({
+                    isGroup: true,
+                    label: entry.label,
+                    companyCount: Object.keys(byCompany).length,
+                    itemCount: entry.items.length,
+                    to: Array.from(entry.emails).join(','),
+                    subject: `Control Tributario - Grupo ${entry.label} (${entry.items.length} registro(s))`,
+                    body
+                });
+            });
+
+            soloBucket.forEach(entry => {
+                const totalAmount = entry.items.reduce((acc, o) => acc + parseToNumber(o.amountStr), 0);
+                const lines = entry.items.map(o =>
+                    `- ${o.taxType} | Periodo: ${o.period || 'N/A'} | Vence: ${formatDate(o.dueDate)}${o.amountStr ? ` | Bs. ${o.amountStr}` : ''}`
+                );
+
+                const body =
+                    `Cliente: ${entry.label}\n\n` +
+                    `${lines.join('\n')}\n\n` +
+                    (totalAmount > 0 ? `Total pendiente: Bs. ${formatCurrency(totalAmount)}\n\n` : '\n') +
+                    `Saludos,\nLegal y Contable, S.C.`;
+
+                dispatches.push({
+                    isGroup: false,
+                    label: entry.label,
+                    companyCount: 1,
+                    itemCount: entry.items.length,
+                    to: Array.from(entry.emails).join(','),
+                    subject: `Control Tributario - ${entry.label} (${entry.items.length} registro(s))`,
+                    body
+                });
+            });
+
+            return dispatches;
+        }
+
+        function triggerConsolidatedMailto(encodedDispatch) {
+            try {
+                const dispatch = JSON.parse(decodeURIComponent(encodedDispatch));
+                const url = `mailto:${encodeURIComponent(dispatch.to || '')}?subject=${encodeURIComponent(dispatch.subject || '')}&body=${encodeURIComponent(dispatch.body || '')}`;
+                window.location.href = url;
+            } catch (err) {
+                console.error("Error al abrir correo consolidado:", err);
+            }
         }
 
         function prefillFromCalendarReminder(encodedReminder) {
@@ -1821,9 +1951,9 @@
                     const due = new Date(o.dueDate + 'T00:00:00');
                     const matchedClient = resolveMatchingClient(o.rif, o.clientName);
                     if (due < today) {
-                        alertItems.push({ ...o, alertType: 'Vencido', clientEmail: matchedClient?.email || '' });
+                        alertItems.push({ ...o, alertType: 'Vencido', group: o.group || matchedClient?.group || '', clientEmail: matchedClient?.email || '' });
                     } else if (due <= limitDate) {
-                        alertItems.push({ ...o, alertType: 'Por Vencer', clientEmail: matchedClient?.email || '' });
+                        alertItems.push({ ...o, alertType: 'Por Vencer', group: o.group || matchedClient?.group || '', clientEmail: matchedClient?.email || '' });
                     }
                 }
             });
@@ -1838,6 +1968,33 @@
             if (groupsBadge) groupsBadge.textContent = `${groups.length} grupo(s)`;
             if (clientsBadge) clientsBadge.textContent = `${clients.length} cliente(s)`;
             if (alertsBadge) alertsBadge.textContent = `${totalAlertCount} alerta(s)`;
+
+            const dispatchBarEl = document.getElementById('grouped-mail-dispatch-bar');
+            if (dispatchBarEl) {
+                const combinedForMail = [...calendarReminders, ...alertItems];
+                const dispatches = buildConsolidatedDispatchPayload(combinedForMail);
+                if (dispatches.length === 0) {
+                    dispatchBarEl.innerHTML = '';
+                } else {
+                    const buttonsHtml = dispatches.map(d => {
+                        const encodedDispatch = encodeURIComponent(JSON.stringify(d));
+                        const badgeText = d.isGroup
+                            ? `Grupo: ${d.label} (${d.companyCount} emp. · ${d.itemCount})`
+                            : `${d.label} (${d.itemCount})`;
+                        return `
+                            <button type="button" onclick="triggerConsolidatedMailto('${encodedDispatch}')" class="bg-slate-900 hover:bg-slate-800 text-slate-100 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-medium transition">
+                                ✉️ Correo ${badgeText}
+                            </button>
+                        `;
+                    }).join('');
+                    dispatchBarEl.innerHTML = `
+                        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-3.5 space-y-2">
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Envío por correo consolidado (1 correo por grupo)</div>
+                            <div class="flex flex-wrap gap-2">${buttonsHtml}</div>
+                        </div>
+                    `;
+                }
+            }
 
             const calRemindersEl = document.getElementById('calendar-reminders-results');
             if (calRemindersEl) {
@@ -1856,7 +2013,7 @@
                         calHtml += `
                             <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-800 flex flex-wrap justify-between items-center gap-3 text-xs">
                                 <div class="space-y-0.5">
-                                    <div class="font-semibold text-white">${rem.clientName} <span class="text-[11px] font-mono text-slate-400">(${rem.rif} · Terminal ${rem.terminal})</span></div>
+                                    <div class="font-semibold text-white">${rem.clientName} <span class="text-[11px] font-mono text-slate-400">(${rem.rif} · Terminal ${rem.terminal})</span>${rem.group ? ` · <span class="text-blue-300">${rem.group}</span>` : ''}</div>
                                     <div class="text-amber-200 font-medium">${rem.taxType}</div>
                                     <div class="text-[11px] text-slate-400">${rem.source} · ${rem.tramoLabel} · Fecha calendario: <span class="text-slate-200 font-medium">${formatDate(rem.dueDate)}</span>${rem.isOverdue ? ' · <span class="text-rose-400 font-semibold">Fecha alcanzada</span>' : ''}</div>
                                 </div>
@@ -1883,7 +2040,7 @@
                         alertsHtml += `
                             <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex justify-between items-start gap-4 text-sm">
                                 <div class="space-y-1">
-                                    <div class="font-semibold text-white">${item.clientName} · <span class="text-xs font-medium text-slate-300">${item.alertType}</span></div>
+                                    <div class="font-semibold text-white">${item.clientName} · <span class="text-xs font-medium text-slate-300">${item.alertType}</span>${item.group ? ` · <span class="text-xs text-blue-300">${item.group}</span>` : ''}</div>
                                     <div class="text-slate-200 text-xs">${item.taxType}</div>
                                     <div class="text-[11px] text-slate-400">${item.period} · Vence ${formatDate(item.dueDate)} · ${item.status}${item.clientEmail ? ` · ${item.clientEmail}` : ''}</div>
                                 </div>
