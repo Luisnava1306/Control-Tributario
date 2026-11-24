@@ -164,7 +164,7 @@
                                 <span id="menu-alerts-badge" class="text-[11px] bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono font-medium">0 alerta(s)</span>
                             </div>
                             <div class="text-sm font-semibold text-white">Alertas y Vencimientos</div>
-                            <p class="text-xs text-slate-400 leading-relaxed">Verificar obligaciones vencidas o próximas a vencer (en 2 días o menos).</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">Obligaciones vencidas, por vencer y recordatorios de calendario SPE / DPP.</p>
                         </button>
                     </div>
                 </div>
@@ -175,6 +175,7 @@
                         <h3 id="obligation-form-title" class="text-sm font-semibold mb-4 text-white border-b border-slate-800 pb-2.5">Registrar Obligación</h3>
                         <form onsubmit="saveObligation(event)" class="space-y-3 text-sm">
                             <input type="hidden" id="obligation-edit-id" />
+                            <input type="hidden" id="ob-calendar-key" />
                             <div>
                                 <label class="text-xs font-medium text-slate-300 mb-1 block">RIF del cliente (Busca y autocompleta)</label>
                                 <input type="text" id="ob-rif" oninput="autofillByRif(this.value)" placeholder="Ej: J-12345678-9" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none transition" />
@@ -371,9 +372,10 @@
                     <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
                         <div>
                             <h3 class="text-base font-bold text-white">Vencimientos y alertas</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">Obligaciones vencidas o a 2 días de vencer</p>
+                            <p class="text-xs text-slate-400 mt-0.5">Recordatorios de calendario SPE / DPP y obligaciones vencidas o a 2 días de vencer</p>
                         </div>
                     </div>
+                    <div id="calendar-reminders-results" class="space-y-3"></div>
                     <div id="alerts-results" class="space-y-3"></div>
                 </div>
             </main>
@@ -388,6 +390,115 @@
         const TAXPAYER_SPNE = "SPNE - Sujeto Pasivo No Especial";
         const TAXPAYER_SPE = "SPE - Sujeto Pasivo Especial";
 
+        // Días de anticipación antes de la fecha del calendario para avisar que falta registrar
+        const REMINDER_DAYS_AHEAD = 3;
+
+        const MONTH_NAMES_ES = {
+            "01": "Enero",
+            "02": "Febrero",
+            "03": "Marzo",
+            "04": "Abril",
+            "05": "Mayo",
+            "06": "Junio",
+            "07": "Julio",
+            "08": "Agosto",
+            "09": "Septiembre",
+            "10": "Octubre",
+            "11": "Noviembre",
+            "12": "Diciembre"
+        };
+
+        /**
+         * ESTRUCTURA DE CALENDARIOS TRIBUTARIOS 2026 (POR MES Y ÚLTIMO DÍGITO DEL RIF "0" A "9")
+         * Formato de fecha: "YYYY-MM-DD" (dejar "" si el mes/dígito aún no está cargado)
+         *
+         * - SPE:
+         *    q1: Primera quincena (operaciones del 01 al 15)
+         *    q2: Segunda quincena (operaciones del 16 al último día del mes)
+         * - DPP (Contribución Especial para la Protección de las Pensiones):
+         *    Fecha mensual por último dígito del RIF (aplica a SPE y SPNE)
+         */
+        const taxCalendars = {
+            year: 2026,
+            SPE: {
+                // Tributos del calendario SPE que se vigilan automáticamente al acercarse la fecha:
+                taxes: [
+                    "IVA - Impuesto al Valor Agregado",
+                    "RIVA - Retenciones de IVA",
+                    "Anticipo ISLR (quincenal)",
+                    "IGTF - Impuesto a las Grandes Transacciones Financieras",
+                    "RISLR - Retenciones de ISLR"
+                ],
+                months: {
+                    "01": {
+                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
+                    },
+                    "02": {
+                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
+                    },
+                    "03": {
+                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
+                    },
+                    "04": {
+                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
+                    },
+                    "05": {
+                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
+                    },
+                    "06": {
+                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
+                    },
+                    "07": {
+                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
+                    },
+                    "08": {
+                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
+                    },
+                    "09": {
+                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
+                    },
+                    "10": {
+                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
+                    },
+                    "11": {
+                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
+                    },
+                    "12": {
+                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
+                    }
+                }
+            },
+            DPP: {
+                tax: "Contribución a las Pensiones",
+                months: {
+                    "01": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                    "02": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                    "03": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                    "04": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                    "05": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                    "06": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                    "07": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                    "08": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                    "09": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                    "10": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                    "11": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
+                    "12": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
+                }
+            }
+        };
+
         const moduleMeta = {
             menu: { title: "Menú Principal", subtitle: "Seleccione la operación que desea realizar" },
             dashboard: { title: "Registrar Obligación", subtitle: "Registro y gestión de obligaciones tributarias y parafiscales" },
@@ -395,7 +506,7 @@
             directory: { title: "Directorio de Clientes", subtitle: "Registro y edición de clientes, RIF, tipo de contribuyente y correo" },
             consult: { title: "Recibos y Consultas", subtitle: "Consulta por grupo o empresa y descarga de recibos PNG" },
             periods: { title: "Filtro por Periodo / Mes", subtitle: "Revisión de compromisos agrupados por mes" },
-            alerts: { title: "Alertas y Vencimientos", subtitle: "Compromisos vencidos o próximos a vencer" }
+            alerts: { title: "Alertas y Vencimientos", subtitle: "Recordatorios de calendario SPE / DPP y compromisos vencidos" }
         };
 
         const seniatSpeTaxes = [
@@ -450,6 +561,28 @@
                 return TAXPAYER_SPE;
             }
             return TAXPAYER_SPNE;
+        }
+
+        /**
+         * Extrae el terminal del RIF venezolano (último dígito del cuerpo numérico, antes del dígito verificador).
+         * Ej: "J-12345678-9" -> "8" | "J123456789" -> "8"
+         */
+        function getRifTerminalDigit(rif) {
+            if (!rif) return null;
+            const clean = String(rif).trim().toUpperCase();
+            const hyphenParts = clean.split('-').filter(Boolean);
+            if (hyphenParts.length >= 3) {
+                const bodyDigits = hyphenParts[1].replace(/\D/g, '');
+                if (bodyDigits.length > 0) return bodyDigits[bodyDigits.length - 1];
+            }
+            const allDigits = clean.replace(/\D/g, '');
+            if (allDigits.length >= 2) {
+                return allDigits[allDigits.length - 2];
+            }
+            if (allDigits.length === 1) {
+                return allDigits[0];
+            }
+            return null;
         }
 
         function setSyncLabel(text) {
@@ -852,9 +985,130 @@
             }
         });
 
+        /**
+         * Evalúa qué obligaciones de calendario (SPE y DPP) están próximas a vencer (<= REMINDER_DAYS_AHEAD)
+         * o ya vencieron en el mes actual y aún NO han sido registradas en `obligations`.
+         */
+        function getCalendarReminders(todayDate) {
+            const reminders = [];
+            const year = todayDate.getFullYear();
+            const monthNum = String(todayDate.getMonth() + 1).padStart(2, '0');
+            const monthName = MONTH_NAMES_ES[monthNum];
+            if (!monthName) return reminders;
+
+            const periodLabel = `${monthName} ${year}`;
+            const windowLimit = new Date(todayDate);
+            windowLimit.setDate(todayDate.getDate() + REMINDER_DAYS_AHEAD);
+
+            const isAlreadyRegistered = (client, taxName, dueDateStr, calendarKey) => {
+                const clientRifClean = (client.rif || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                const clientNameNorm = normalizeSearchText(client.name);
+                return obligations.some(o => {
+                    if (o.calendarKey && o.calendarKey === calendarKey) return true;
+                    const sameClient =
+                        (o.clientId && String(o.clientId) === String(client.id)) ||
+                        (clientRifClean && (o.rif || '').toLowerCase().replace(/[^a-z0-9]/g, '') === clientRifClean) ||
+                        (clientNameNorm && normalizeSearchText(o.clientName) === clientNameNorm);
+                    if (!sameClient) return false;
+                    return o.taxType === taxName && o.period === periodLabel && o.dueDate === dueDateStr;
+                });
+            };
+
+            clients.forEach(client => {
+                const terminal = getRifTerminalDigit(client.rif);
+                if (terminal === null) return;
+
+                const tType = normalizeTaxpayerType(client.taxpayerType);
+
+                // 1. Calendario SPE (solo clientes SPE, quincenas q1 y q2)
+                if (tType === TAXPAYER_SPE && taxCalendars.SPE?.months?.[monthNum]) {
+                    const monthData = taxCalendars.SPE.months[monthNum];
+                    [
+                        { key: 'q1', label: '1ra Quincena (01 al 15)' },
+                        { key: 'q2', label: '2da Quincena (16 al cierre)' }
+                    ].forEach(tramo => {
+                        const dueDateStr = monthData[tramo.key]?.[terminal];
+                        if (!dueDateStr) return;
+
+                        const dueObj = new Date(dueDateStr + 'T00:00:00');
+                        if (isNaN(dueObj.getTime()) || dueObj > windowLimit) return;
+
+                        (taxCalendars.SPE.taxes || []).forEach(taxName => {
+                            const calendarKey = `SPE-${year}-${monthNum}-${tramo.key}-${client.id}-${taxName}`;
+                            if (!isAlreadyRegistered(client, taxName, dueDateStr, calendarKey)) {
+                                reminders.push({
+                                    calendarKey,
+                                    source: 'Calendario SPE',
+                                    tramoLabel: tramo.label,
+                                    terminal,
+                                    clientId: client.id,
+                                    rif: client.rif,
+                                    clientName: client.name,
+                                    category: 'Impuestos Nacionales (SENIAT)',
+                                    taxType: taxName,
+                                    period: periodLabel,
+                                    dueDate: dueDateStr,
+                                    isOverdue: dueObj < todayDate
+                                });
+                            }
+                        });
+                    });
+                }
+
+                // 2. Calendario DPP / Contribución a las Pensiones (aplica a SPE y SPNE)
+                const dppDueStr = taxCalendars.DPP?.months?.[monthNum]?.[terminal];
+                if (dppDueStr) {
+                    const dppDueObj = new Date(dppDueStr + 'T00:00:00');
+                    if (!isNaN(dppDueObj.getTime()) && dppDueObj <= windowLimit) {
+                        const dppTax = taxCalendars.DPP.tax || 'Contribución a las Pensiones';
+                        const calendarKey = `DPP-${year}-${monthNum}-${client.id}-${dppTax}`;
+                        if (!isAlreadyRegistered(client, dppTax, dppDueStr, calendarKey)) {
+                            reminders.push({
+                                calendarKey,
+                                source: 'Calendario Pensiones (DPP)',
+                                tramoLabel: 'Declaración Mensual',
+                                terminal,
+                                clientId: client.id,
+                                rif: client.rif,
+                                clientName: client.name,
+                                category: 'Impuestos Nacionales (SENIAT)',
+                                taxType: dppTax,
+                                period: periodLabel,
+                                dueDate: dppDueStr,
+                                isOverdue: dppDueObj < todayDate
+                            });
+                        }
+                    }
+                }
+            });
+
+            return reminders.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+        }
+
+        function prefillFromCalendarReminder(encodedReminder) {
+            try {
+                const rem = JSON.parse(decodeURIComponent(encodedReminder));
+                switchTab('dashboard');
+                resetObligationForm();
+                document.getElementById('ob-calendar-key').value = rem.calendarKey || '';
+                document.getElementById('ob-rif').value = rem.rif || '';
+                document.getElementById('ob-client').value = rem.clientName || '';
+                document.getElementById('ob-category').value = rem.category || 'Impuestos Nacionales (SENIAT)';
+                updateTaxOptions(rem.taxType || '');
+                document.getElementById('ob-period').value = rem.period || 'Noviembre 2026';
+                document.getElementById('ob-duedate').value = rem.dueDate || '';
+                document.getElementById('ob-status').value = 'Por pagar';
+                document.getElementById('ob-amount').focus();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (err) {
+                console.error("Error al precargar recordatorio de calendario:", err);
+            }
+        }
+
         function saveObligation(e) {
             e.preventDefault();
             const editId = document.getElementById('obligation-edit-id').value;
+            const calendarKey = document.getElementById('ob-calendar-key').value || '';
             const rawRif = document.getElementById('ob-rif').value;
             const rawClientName = document.getElementById('ob-client').value;
             const matchedClient = resolveMatchingClient(rawRif, rawClientName);
@@ -870,6 +1124,7 @@
                 obligations = obligations.map(o => o.id == editId ? {
                     ...o,
                     clientId: matchedClient ? matchedClient.id : (o.clientId || null),
+                    calendarKey: calendarKey || o.calendarKey || '',
                     rif: finalRif,
                     clientName: finalClientName,
                     group: finalGroup,
@@ -884,6 +1139,7 @@
                 const newOb = {
                     id: Date.now(),
                     clientId: matchedClient ? matchedClient.id : null,
+                    calendarKey,
                     rif: finalRif,
                     clientName: finalClientName,
                     group: finalGroup,
@@ -906,6 +1162,7 @@
                 switchTab('dashboard');
 
                 document.getElementById('obligation-edit-id').value = o.id;
+                document.getElementById('ob-calendar-key').value = o.calendarKey || '';
                 document.getElementById('ob-rif').value = o.rif || '';
                 document.getElementById('ob-client').value = o.clientName || '';
                 hideClientSuggestions();
@@ -928,6 +1185,7 @@
 
         function resetObligationForm() {
             document.getElementById('obligation-edit-id').value = '';
+            document.getElementById('ob-calendar-key').value = '';
             document.getElementById('ob-rif').value = '';
             document.getElementById('ob-client').value = '';
             hideClientSuggestions();
@@ -1066,13 +1324,14 @@
             cList.innerHTML = filteredClients.map(c => {
                 const tType = normalizeTaxpayerType(c.taxpayerType);
                 const shortLabel = tType.startsWith("SPE") ? "SPE" : "SPNE";
+                const terminal = getRifTerminalDigit(c.rif);
                 const emailLabel = c.email ? c.email : 'Sin correo';
                 return `
                     <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex justify-between items-center gap-3 text-sm">
                         <div>
                             <div class="font-semibold text-white flex flex-wrap items-center gap-2">
                                 <span>${c.name}</span>
-                                <span class="text-[10px] bg-slate-950 text-slate-200 border border-slate-700 px-2 py-0.5 rounded-full font-medium">${shortLabel}</span>
+                                <span class="text-[10px] bg-slate-950 text-slate-200 border border-slate-700 px-2 py-0.5 rounded-full font-medium">${shortLabel}${terminal !== null ? ` · Terminal ${terminal}` : ''}</span>
                             </div>
                             <div class="text-slate-400 text-xs mt-0.5"><span class="font-mono text-slate-200">${c.rif}</span> · ${tType} · ${c.group || 'Sin grupo'} · ${emailLabel}</div>
                         </div>
@@ -1572,6 +1831,7 @@
             limitDate.setDate(today.getDate() + 2);
 
             let alertItems = [];
+            const calendarReminders = getCalendarReminders(today);
 
             const pendingObs = obligations.filter(o => o.status !== 'Pagado');
             hasPendingPayments = pendingObs.length > 0;
@@ -1589,6 +1849,8 @@
                 }
             });
 
+            const totalAlertCount = alertItems.length + calendarReminders.length;
+
             const pendingBadge = document.getElementById('menu-pending-badge');
             const groupsBadge = document.getElementById('menu-groups-badge');
             const clientsBadge = document.getElementById('menu-clients-badge');
@@ -1596,14 +1858,48 @@
             if (pendingBadge) pendingBadge.textContent = `${pendingObs.length} pendiente(s)`;
             if (groupsBadge) groupsBadge.textContent = `${groups.length} grupo(s)`;
             if (clientsBadge) clientsBadge.textContent = `${clients.length} cliente(s)`;
-            if (alertsBadge) alertsBadge.textContent = `${alertItems.length} alerta(s)`;
+            if (alertsBadge) alertsBadge.textContent = `${totalAlertCount} alerta(s)`;
+
+            const calRemindersEl = document.getElementById('calendar-reminders-results');
+            if (calRemindersEl) {
+                if (calendarReminders.length === 0) {
+                    calRemindersEl.innerHTML = '';
+                } else {
+                    let calHtml = `
+                        <div class="bg-amber-950/30 border border-amber-500/30 rounded-2xl p-4 space-y-2.5">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold uppercase tracking-wider text-amber-300">📅 Pendientes por registrar según calendario (${calendarReminders.length})</span>
+                                <span class="text-[11px] text-amber-200/70">Aviso con ${REMINDER_DAYS_AHEAD} días de antelación</span>
+                            </div>
+                    `;
+                    calendarReminders.forEach(rem => {
+                        const encoded = encodeURIComponent(JSON.stringify(rem));
+                        calHtml += `
+                            <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-800 flex flex-wrap justify-between items-center gap-3 text-xs">
+                                <div class="space-y-0.5">
+                                    <div class="font-semibold text-white">${rem.clientName} <span class="text-[11px] font-mono text-slate-400">(${rem.rif} · Terminal ${rem.terminal})</span></div>
+                                    <div class="text-amber-200 font-medium">${rem.taxType}</div>
+                                    <div class="text-[11px] text-slate-400">${rem.source} · ${rem.tramoLabel} · Fecha calendario: <span class="text-slate-200 font-medium">${formatDate(rem.dueDate)}</span>${rem.isOverdue ? ' · <span class="text-rose-400 font-semibold">Fecha alcanzada</span>' : ''}</div>
+                                </div>
+                                <button onclick="prefillFromCalendarReminder('${encoded}')" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-xl text-[11px] font-medium transition shrink-0">
+                                    Registrar ahora
+                                </button>
+                            </div>
+                        `;
+                    });
+                    calHtml += `</div>`;
+                    calRemindersEl.innerHTML = calHtml;
+                }
+            }
 
             const alertsResultsEl = document.getElementById('alerts-results');
             if (alertsResultsEl) {
-                if (alertItems.length === 0) {
-                    alertsResultsEl.innerHTML = `<div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 text-slate-400 text-xs italic">No hay clientes con saldos vencidos ni próximos a vencer en este momento.</div>`;
+                if (alertItems.length === 0 && calendarReminders.length === 0) {
+                    alertsResultsEl.innerHTML = `<div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 text-slate-400 text-xs italic">No hay clientes con saldos vencidos ni recordatorios de calendario pendientes en este momento.</div>`;
+                } else if (alertItems.length === 0) {
+                    alertsResultsEl.innerHTML = '';
                 } else {
-                    let alertsHtml = '';
+                    let alertsHtml = `<div class="text-xs font-bold uppercase tracking-wider text-slate-400 pt-1">Obligaciones registradas vencidas o por vencer (${alertItems.length})</div>`;
                     alertItems.forEach(item => {
                         alertsHtml += `
                             <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex justify-between items-start gap-4 text-sm">
