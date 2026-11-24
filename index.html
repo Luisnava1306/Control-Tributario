@@ -164,7 +164,7 @@
                                 <span id="menu-alerts-badge" class="text-[11px] bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono font-medium">0 alerta(s)</span>
                             </div>
                             <div class="text-sm font-semibold text-white">Alertas y Vencimientos</div>
-                            <p class="text-xs text-slate-400 leading-relaxed">Obligaciones vencidas, por vencer y recordatorios de calendario SPE / DPP.</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">Recordatorios de calendario SPE / DPP y obligaciones vencidas o a 2 días de vencer.</p>
                         </button>
                     </div>
                 </div>
@@ -390,7 +390,6 @@
         const TAXPAYER_SPNE = "SPNE - Sujeto Pasivo No Especial";
         const TAXPAYER_SPE = "SPE - Sujeto Pasivo Especial";
 
-        // Días de anticipación antes de la fecha del calendario para avisar que falta registrar
         const REMINDER_DAYS_AHEAD = 3;
 
         const MONTH_NAMES_ES = {
@@ -408,20 +407,9 @@
             "12": "Diciembre"
         };
 
-        /**
-         * ESTRUCTURA DE CALENDARIOS TRIBUTARIOS 2026 (POR MES Y ÚLTIMO DÍGITO DEL RIF "0" A "9")
-         * Formato de fecha: "YYYY-MM-DD" (dejar "" si el mes/dígito aún no está cargado)
-         *
-         * - SPE:
-         *    q1: Primera quincena (operaciones del 01 al 15)
-         *    q2: Segunda quincena (operaciones del 16 al último día del mes)
-         * - DPP (Contribución Especial para la Protección de las Pensiones):
-         *    Fecha mensual por último dígito del RIF (aplica a SPE y SPNE)
-         */
         const taxCalendars = {
             year: 2026,
             SPE: {
-                // Tributos del calendario SPE que se vigilan automáticamente al acercarse la fecha:
                 taxes: [
                     "IVA - Impuesto al Valor Agregado",
                     "RIVA - Retenciones de IVA",
@@ -564,25 +552,22 @@
         }
 
         /**
-         * Extrae el terminal del RIF venezolano (último dígito del cuerpo numérico, antes del dígito verificador).
-         * Ej: "J-12345678-9" -> "8" | "J123456789" -> "8"
+         * Extrae el último dígito del RIF (el dígito ubicado después del último guion,
+         * o el último dígito numérico si el RIF no tiene guiones).
+         * Ej: "J-12345678-9" -> "9" | "V-01234567-0" -> "0"
          */
         function getRifTerminalDigit(rif) {
             if (!rif) return null;
             const clean = String(rif).trim().toUpperCase();
             const hyphenParts = clean.split('-').filter(Boolean);
-            if (hyphenParts.length >= 3) {
-                const bodyDigits = hyphenParts[1].replace(/\D/g, '');
-                if (bodyDigits.length > 0) return bodyDigits[bodyDigits.length - 1];
+            if (hyphenParts.length >= 2) {
+                const afterLastHyphenDigits = hyphenParts[hyphenParts.length - 1].replace(/\D/g, '');
+                if (afterLastHyphenDigits.length > 0) {
+                    return afterLastHyphenDigits.charAt(afterLastHyphenDigits.length - 1);
+                }
             }
             const allDigits = clean.replace(/\D/g, '');
-            if (allDigits.length >= 2) {
-                return allDigits[allDigits.length - 2];
-            }
-            if (allDigits.length === 1) {
-                return allDigits[0];
-            }
-            return null;
+            return allDigits.length > 0 ? allDigits.charAt(allDigits.length - 1) : null;
         }
 
         function setSyncLabel(text) {
@@ -985,10 +970,6 @@
             }
         });
 
-        /**
-         * Evalúa qué obligaciones de calendario (SPE y DPP) están próximas a vencer (<= REMINDER_DAYS_AHEAD)
-         * o ya vencieron en el mes actual y aún NO han sido registradas en `obligations`.
-         */
         function getCalendarReminders(todayDate) {
             const reminders = [];
             const year = todayDate.getFullYear();
@@ -1020,7 +1001,6 @@
 
                 const tType = normalizeTaxpayerType(client.taxpayerType);
 
-                // 1. Calendario SPE (solo clientes SPE, quincenas q1 y q2)
                 if (tType === TAXPAYER_SPE && taxCalendars.SPE?.months?.[monthNum]) {
                     const monthData = taxCalendars.SPE.months[monthNum];
                     [
@@ -1055,7 +1035,6 @@
                     });
                 }
 
-                // 2. Calendario DPP / Contribución a las Pensiones (aplica a SPE y SPNE)
                 const dppDueStr = taxCalendars.DPP?.months?.[monthNum]?.[terminal];
                 if (dppDueStr) {
                     const dppDueObj = new Date(dppDueStr + 'T00:00:00');
