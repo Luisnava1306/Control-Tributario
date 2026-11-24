@@ -137,7 +137,7 @@
                                 <span id="menu-clients-badge" class="text-[11px] bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono font-medium">0 cliente(s)</span>
                             </div>
                             <div class="text-sm font-semibold text-white">Directorio de Clientes</div>
-                            <p class="text-xs text-slate-400 leading-relaxed">Administrar RIF, razones sociales, tipo de contribuyente, teléfonos y grupos.</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">Administrar RIF, razones sociales, tipo de contribuyente, teléfonos, correos y grupos.</p>
                         </button>
 
                         <button onclick="switchTab('consult')" class="text-left bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 p-5 rounded-2xl transition group space-y-2">
@@ -294,7 +294,11 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="text-xs font-medium text-slate-300 mb-1 block">Teléfono</label>
+                                <label class="text-xs font-medium text-slate-300 mb-1 block">Email de alerta *</label>
+                                <input type="email" id="client-email" required placeholder="administracion@empresa.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none transition" />
+                            </div>
+                            <div>
+                                <label class="text-xs font-medium text-slate-300 mb-1 block">Teléfono (opcional)</label>
                                 <input type="text" id="client-phone" placeholder="0414-0000000" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none transition" />
                             </div>
                             <div class="flex gap-2 pt-2">
@@ -388,7 +392,7 @@
             menu: { title: "Menú Principal", subtitle: "Seleccione la operación que desea realizar" },
             dashboard: { title: "Registrar Obligación", subtitle: "Registro y gestión de obligaciones tributarias y parafiscales" },
             groups: { title: "Verificar Grupos", subtitle: "Administración y consulta de grupos corporativos" },
-            directory: { title: "Directorio de Clientes", subtitle: "Registro y edición de clientes, RIF y tipo de contribuyente" },
+            directory: { title: "Directorio de Clientes", subtitle: "Registro y edición de clientes, RIF, tipo de contribuyente y correo" },
             consult: { title: "Recibos y Consultas", subtitle: "Consulta por grupo o empresa y descarga de recibos PNG" },
             periods: { title: "Filtro por Periodo / Mes", subtitle: "Revisión de compromisos agrupados por mes" },
             alerts: { title: "Alertas y Vencimientos", subtitle: "Compromisos vencidos o próximos a vencer" }
@@ -464,7 +468,8 @@
                         if (Array.isArray(remoteData.clients)) {
                             clients = remoteData.clients.map(c => ({
                                 ...c,
-                                taxpayerType: normalizeTaxpayerType(c.taxpayerType)
+                                taxpayerType: normalizeTaxpayerType(c.taxpayerType),
+                                email: c.email || ''
                             }));
                         }
                         if (Array.isArray(remoteData.obligations)) obligations = remoteData.obligations;
@@ -503,7 +508,7 @@
                             if (Array.isArray(remote.clients)) {
                                 remote.clients.forEach(rc => {
                                     if (!localClientIds.has(String(rc.id))) {
-                                        clients.push({ ...rc, taxpayerType: normalizeTaxpayerType(rc.taxpayerType) });
+                                        clients.push({ ...rc, taxpayerType: normalizeTaxpayerType(rc.taxpayerType), email: rc.email || '' });
                                     }
                                 });
                             }
@@ -566,7 +571,7 @@
                         return;
                     }
                     groups = Array.isArray(parsed.groups) ? parsed.groups : [];
-                    clients = parsed.clients.map(c => ({ ...c, taxpayerType: normalizeTaxpayerType(c.taxpayerType) }));
+                    clients = parsed.clients.map(c => ({ ...c, taxpayerType: normalizeTaxpayerType(c.taxpayerType), email: c.email || '' }));
                     obligations = parsed.obligations;
                     isInitialCloudLoaded = true;
                     await saveData();
@@ -962,6 +967,7 @@
             const name = document.getElementById('client-name').value.trim();
             const taxpayerType = normalizeTaxpayerType(document.getElementById('client-taxpayer-type').value);
             const group = document.getElementById('client-group').value;
+            const email = document.getElementById('client-email').value.trim();
             const phone = document.getElementById('client-phone').value.trim();
 
             if (id) {
@@ -970,11 +976,10 @@
                 const prevNameNorm = normalizeSearchText(prevClient?.name || '');
 
                 clients = clients.map(c => String(c.id) === String(id)
-                    ? { ...c, rif, name, taxpayerType, group, phone }
+                    ? { ...c, rif, name, taxpayerType, group, email, phone }
                     : c
                 );
 
-                // Propagar actualización de RIF, Razón Social y Grupo a todas las obligaciones vinculadas
                 obligations = obligations.map(o => {
                     const obRifClean = (o.rif || '').toLowerCase().replace(/[^a-z0-9]/g, '');
                     const obNameNorm = normalizeSearchText(o.clientName || '');
@@ -995,7 +1000,7 @@
                     return o;
                 });
             } else {
-                clients.push({ id: Date.now(), rif, name, taxpayerType, group, phone });
+                clients.push({ id: Date.now(), rif, name, taxpayerType, group, email, phone });
             }
             saveData();
             resetClientForm();
@@ -1010,7 +1015,8 @@
                 document.getElementById('client-name').value = c.name;
                 document.getElementById('client-taxpayer-type').value = normalizeTaxpayerType(c.taxpayerType);
                 document.getElementById('client-group').value = c.group;
-                document.getElementById('client-phone').value = c.phone;
+                document.getElementById('client-email').value = c.email || '';
+                document.getElementById('client-phone').value = c.phone || '';
                 document.getElementById('client-form-title').innerText = 'Editar Cliente';
             }
         }
@@ -1028,6 +1034,7 @@
             document.getElementById('client-name').value = '';
             document.getElementById('client-taxpayer-type').value = TAXPAYER_SPNE;
             document.getElementById('client-group').value = '';
+            document.getElementById('client-email').value = '';
             document.getElementById('client-phone').value = '';
             document.getElementById('client-form-title').innerText = 'Nuevo Cliente';
         }
@@ -1057,6 +1064,7 @@
             cList.innerHTML = filteredClients.map(c => {
                 const tType = normalizeTaxpayerType(c.taxpayerType);
                 const shortLabel = tType.startsWith("SPE") ? "SPE" : "SPNE";
+                const emailLabel = c.email ? c.email : 'Sin correo';
                 return `
                     <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex justify-between items-center gap-3 text-sm">
                         <div>
@@ -1064,7 +1072,7 @@
                                 <span>${c.name}</span>
                                 <span class="text-[10px] bg-slate-950 text-slate-200 border border-slate-700 px-2 py-0.5 rounded-full font-medium">${shortLabel}</span>
                             </div>
-                            <div class="text-slate-400 text-xs mt-0.5"><span class="font-mono text-slate-200">${c.rif}</span> · ${tType} · ${c.group || 'Sin grupo'}</div>
+                            <div class="text-slate-400 text-xs mt-0.5"><span class="font-mono text-slate-200">${c.rif}</span> · ${tType} · ${c.group || 'Sin grupo'} · ${emailLabel}</div>
                         </div>
                         <div class="flex items-center gap-1.5 shrink-0">
                             <button onclick="editClient(${c.id})" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded-xl text-xs font-medium transition">Editar</button>
@@ -1570,10 +1578,11 @@
             obligations.forEach(o => {
                 if (o.status !== 'Pagado' && o.dueDate) {
                     const due = new Date(o.dueDate + 'T00:00:00');
+                    const matchedClient = resolveMatchingClient(o.rif, o.clientName);
                     if (due < today) {
-                        alertItems.push({ ...o, alertType: 'Vencido' });
+                        alertItems.push({ ...o, alertType: 'Vencido', clientEmail: matchedClient?.email || '' });
                     } else if (due <= limitDate) {
-                        alertItems.push({ ...o, alertType: 'Por Vencer' });
+                        alertItems.push({ ...o, alertType: 'Por Vencer', clientEmail: matchedClient?.email || '' });
                     }
                 }
             });
@@ -1599,7 +1608,7 @@
                                 <div class="space-y-1">
                                     <div class="font-semibold text-white">${item.clientName} · <span class="text-xs font-medium text-slate-300">${item.alertType}</span></div>
                                     <div class="text-slate-200 text-xs">${item.taxType}</div>
-                                    <div class="text-[11px] text-slate-400">${item.period} · Vence ${formatDate(item.dueDate)} · ${item.status}</div>
+                                    <div class="text-[11px] text-slate-400">${item.period} · Vence ${formatDate(item.dueDate)} · ${item.status}${item.clientEmail ? ` · ${item.clientEmail}` : ''}</div>
                                 </div>
                                 <div class="text-right shrink-0 space-y-2">
                                     <span class="font-mono text-white font-semibold text-sm block">Bs. ${item.amountStr}</span>
