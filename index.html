@@ -152,12 +152,13 @@
                         <form onsubmit="saveObligation(event)" class="space-y-3 text-sm">
                             <input type="hidden" id="obligation-edit-id" />
                             <div>
-                                <label class="text-xs font-medium text-slate-300 mb-1 block">RIF del cliente (Autocompleta)</label>
-                                <input type="text" id="ob-rif" oninput="autofillClient(this.value)" placeholder="Ej: J-12345678-9" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none transition" />
+                                <label class="text-xs font-medium text-slate-300 mb-1 block">RIF del cliente (Busca y autocompleta)</label>
+                                <input type="text" id="ob-rif" oninput="autofillByRif(this.value)" placeholder="Ej: J-12345678-9" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none transition" />
                             </div>
-                            <div>
-                                <label class="text-xs font-medium text-slate-300 mb-1 block">Razón social *</label>
-                                <input type="text" id="ob-client" required placeholder="Nombre de la empresa" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none transition" />
+                            <div class="relative">
+                                <label class="text-xs font-medium text-slate-300 mb-1 block">Razón social o palabra clave *</label>
+                                <input type="text" id="ob-client" required oninput="autofillByName(this.value)" onfocus="autofillByName(this.value)" placeholder="Ej: el rincon o c&g" autocomplete="off" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none transition" />
+                                <div id="client-suggestions" class="hidden mt-1.5 bg-slate-900 border border-slate-700 rounded-xl overflow-hidden divide-y divide-slate-800 max-h-44 overflow-y-auto shadow-lg"></div>
                             </div>
                             <div>
                                 <label class="text-xs font-medium text-slate-300 mb-1 block">Categoría</label>
@@ -552,24 +553,137 @@
             });
         }
 
-        function autofillClient(val) {
-            const found = clients.find(c => c.rif.toLowerCase().includes(val.toLowerCase()) || val.toLowerCase().includes(c.rif.toLowerCase()));
-            if (found) {
-                document.getElementById('ob-client').value = found.name;
+        function normalizeSearchText(str) {
+            return (str || '')
+                .toString()
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9&]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function findClientsByQuery(query) {
+            const q = normalizeSearchText(query);
+            if (!q) return [];
+            const tokens = q.split(' ').filter(Boolean);
+
+            return clients.filter(c => {
+                const normName = normalizeSearchText(c.name);
+                const normRif = (c.rif || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                const compactQ = q.replace(/[^a-z0-9]/g, '');
+
+                const matchesAllTokens = tokens.every(tok => normName.includes(tok));
+                const matchesRawSubstring = (c.name || '').toLowerCase().includes(query.toLowerCase().trim());
+                const matchesRif = compactQ.length > 0 && normRif.includes(compactQ);
+
+                return matchesAllTokens || matchesRawSubstring || matchesRif;
+            });
+        }
+
+        function resolveMatchingClient(rifInput, nameInput) {
+            const rifClean = (rifInput || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (rifClean) {
+                const exactOrPartialRif = clients.find(c => (c.rif || '').toLowerCase().replace(/[^a-z0-9]/g, '') === rifClean)
+                    || clients.find(c => (c.rif || '').toLowerCase().replace(/[^a-z0-9]/g, '').includes(rifClean));
+                if (exactOrPartialRif) return exactOrPartialRif;
+            }
+
+            const matches = findClientsByQuery(nameInput);
+            if (matches.length === 1) return matches[0];
+            if (matches.length > 1) {
+                const exactName = matches.find(c => normalizeSearchText(c.name) === normalizeSearchText(nameInput));
+                return exactName || matches[0];
+            }
+            return null;
+        }
+
+        function hideClientSuggestions() {
+            const box = document.getElementById('client-suggestions');
+            if (box) {
+                box.innerHTML = '';
+                box.classList.add('hidden');
             }
         }
+
+        function selectClientSuggestion(clientId) {
+            const found = clients.find(c => c.id === clientId);
+            if (!found) return;
+            document.getElementById('ob-rif').value = found.rif || '';
+            document.getElementById('ob-client').value = found.name || '';
+            hideClientSuggestions();
+        }
+
+        function autofillByRif(val) {
+            const cleanVal = (val || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (!cleanVal) return;
+
+            const found = clients.find(c => (c.rif || '').toLowerCase().replace(/[^a-z0-9]/g, '') === cleanVal)
+                || clients.find(c => (c.rif || '').toLowerCase().replace(/[^a-z0-9]/g, '').includes(cleanVal));
+
+            if (found) {
+                document.getElementById('ob-client').value = found.name;
+                hideClientSuggestions();
+            }
+        }
+
+        function autofillByName(val) {
+            const box = document.getElementById('client-suggestions');
+            const rifInput = document.getElementById('ob-rif');
+            const trimmed = (val || '').trim();
+
+            if (!trimmed || !box) {
+                hideClientSuggestions();
+                return;
+            }
+
+            const matches = findClientsByQuery(trimmed);
+            if (matches.length === 0) {
+                hideClientSuggestions();
+                return;
+            }
+
+            if (matches.length === 1 && rifInput) {
+                rifInput.value = matches[0].rif || rifInput.value;
+            }
+
+            box.innerHTML = matches.slice(0, 6).map(c => `
+                <button type="button" onclick="selectClientSuggestion(${c.id})" class="w-full text-left px-3 py-2 hover:bg-slate-800 transition flex justify-between items-center gap-2 text-xs">
+                    <span class="font-semibold text-white truncate">${c.name}</span>
+                    <span class="font-mono text-[11px] text-slate-400 shrink-0">${c.rif || 'S/N'}</span>
+                </button>
+            `).join('');
+            box.classList.remove('hidden');
+        }
+
+        document.addEventListener('click', (e) => {
+            const clientInput = document.getElementById('ob-client');
+            const suggestionsBox = document.getElementById('client-suggestions');
+            if (!clientInput || !suggestionsBox) return;
+            if (!clientInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                hideClientSuggestions();
+            }
+        });
 
         function saveObligation(e) {
             e.preventDefault();
             const editId = document.getElementById('obligation-edit-id').value;
+            const rawRif = document.getElementById('ob-rif').value;
+            const rawClientName = document.getElementById('ob-client').value;
+            const matchedClient = resolveMatchingClient(rawRif, rawClientName);
+
+            const finalRif = matchedClient ? (matchedClient.rif || rawRif || 'S/N') : (rawRif.trim() || 'S/N');
+            const finalClientName = matchedClient ? matchedClient.name : rawClientName.trim();
+
             const rawAmount = document.getElementById('ob-amount').value;
             const formattedAmount = cleanAndFormatAmountInput(rawAmount);
 
             if (editId) {
                 obligations = obligations.map(o => o.id == editId ? {
                     ...o,
-                    rif: document.getElementById('ob-rif').value || 'S/N',
-                    clientName: document.getElementById('ob-client').value,
+                    rif: finalRif,
+                    clientName: finalClientName,
                     category: document.getElementById('ob-category').value,
                     taxType: document.getElementById('ob-tax').value,
                     period: document.getElementById('ob-period').value,
@@ -580,8 +694,8 @@
             } else {
                 const newOb = {
                     id: Date.now(),
-                    rif: document.getElementById('ob-rif').value || 'S/N',
-                    clientName: document.getElementById('ob-client').value,
+                    rif: finalRif,
+                    clientName: finalClientName,
                     category: document.getElementById('ob-category').value,
                     taxType: document.getElementById('ob-tax').value,
                     period: document.getElementById('ob-period').value,
@@ -603,6 +717,7 @@
                 document.getElementById('obligation-edit-id').value = o.id;
                 document.getElementById('ob-rif').value = o.rif || '';
                 document.getElementById('ob-client').value = o.clientName || '';
+                hideClientSuggestions();
                 document.getElementById('ob-category').value = o.category || 'Impuestos Nacionales (SENIAT)';
                 updateTaxOptions();
                 document.getElementById('ob-tax').value = o.taxType || '';
@@ -625,6 +740,7 @@
             document.getElementById('obligation-edit-id').value = '';
             document.getElementById('ob-rif').value = '';
             document.getElementById('ob-client').value = '';
+            hideClientSuggestions();
             document.getElementById('ob-amount').value = '';
             document.getElementById('obligation-form-title').innerText = 'Registrar Obligación';
             updateTaxOptions();
