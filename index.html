@@ -164,7 +164,7 @@
                                 <span id="menu-alerts-badge" class="text-[11px] bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono font-medium">0 alerta(s)</span>
                             </div>
                             <div class="text-sm font-semibold text-white">Alertas y Vencimientos</div>
-                            <p class="text-xs text-slate-400 leading-relaxed">Recordatorios de calendario SPE / DPP y obligaciones vencidas o a 2 días de vencer.</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">Recordatorios de calendario SPE / DPP / ISLR y obligaciones vencidas o a 2 días de vencer.</p>
                         </button>
                     </div>
                 </div>
@@ -372,7 +372,7 @@
                     <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
                         <div>
                             <h3 class="text-base font-bold text-white">Vencimientos y alertas</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">Recordatorios de calendario SPE / DPP y obligaciones vencidas o a 2 días de vencer</p>
+                            <p class="text-xs text-slate-400 mt-0.5">Recordatorios de calendario SPE / DPP / ISLR y obligaciones vencidas o a 2 días de vencer</p>
                         </div>
                     </div>
                     <div id="grouped-mail-dispatch-bar" class="space-y-2"></div>
@@ -415,75 +415,104 @@
                     "IVA - Impuesto al Valor Agregado",
                     "RIVA - Retenciones de IVA",
                     "Anticipo ISLR (quincenal)",
-                    "IGTF - Impuesto a las Grandes Transacciones Financieras",
-                    "RISLR - Retenciones de ISLR"
+                    "IGTF - Impuesto a las Grandes Transacciones Financieras"
                 ],
                 months: {
-                    "01": {
-                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
-                    },
-                    "02": {
-                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
-                    },
-                    "03": {
-                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
-                    },
-                    "04": {
-                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
-                    },
-                    "05": {
-                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
-                    },
-                    "06": {
-                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
-                    },
-                    "07": {
-                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
-                    },
-                    "08": {
-                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
-                    },
-                    "09": {
-                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
-                    },
-                    "10": {
-                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
-                    },
                     "11": {
-                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
+                        q1: {
+                            "0": "2026-11-27",
+                            "1": "2026-11-26",
+                            "2": "2026-11-17",
+                            "3": "2026-11-23",
+                            "4": "2026-11-20",
+                            "5": "2026-11-18",
+                            "6": "2026-11-25",
+                            "7": "2026-11-19",
+                            "8": "2026-11-24",
+                            "9": "2026-11-30"
+                        },
+                        q2: {
+                            "0": "2026-12-03",
+                            "1": "2026-12-12",
+                            "2": "2026-12-02",
+                            "3": "2026-12-09",
+                            "4": "2026-12-05",
+                            "5": "2026-12-04",
+                            "6": "2026-12-11",
+                            "7": "2026-12-03",
+                            "8": "2026-12-06",
+                            "9": "2026-12-10"
+                        }
                     },
                     "12": {
-                        q1: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                        q2: { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
+                        q1: {
+                            "0": "2026-12-16",
+                            "1": "2026-12-29",
+                            "2": "2026-12-21",
+                            "3": "2026-12-28",
+                            "4": "2026-12-22",
+                            "5": "2026-12-17",
+                            "6": "2026-12-18",
+                            "7": "2026-12-18",
+                            "8": "2026-12-30",
+                            "9": "2026-12-23"
+                        },
+                        q2: {
+                            "0": "", "1": "", "2": "", "3": "", "4": "",
+                            "5": "", "6": "", "7": "", "8": "", "9": ""
+                        }
                     }
                 }
             },
             DPP: {
                 tax: "Contribución a las Pensiones",
                 months: {
-                    "01": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                    "02": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                    "03": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                    "04": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                    "05": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                    "06": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                    "07": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                    "08": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                    "09": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                    "10": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                    "11": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" },
-                    "12": { "0": "", "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "" }
+                    "11": {
+                        "0": "2026-12-16",
+                        "1": "2026-12-29",
+                        "2": "2026-12-21",
+                        "3": "2026-12-28",
+                        "4": "2026-12-22",
+                        "5": "2026-12-17",
+                        "6": "2026-12-15",
+                        "7": "2026-12-18",
+                        "8": "2026-12-30",
+                        "9": "2026-12-23"
+                    },
+                    "12": {
+                        "0": "", "1": "", "2": "", "3": "", "4": "",
+                        "5": "", "6": "", "7": "", "8": "", "9": ""
+                    }
+                }
+            },
+            RISLR: {
+                speOnly: true,
+                tax: "RISLR - Retenciones de ISLR",
+                months: {
+                    "11": {
+                        "0": "2026-12-09",
+                        "1": "2026-12-05",
+                        "2": "2026-12-09",
+                        "3": "2026-12-09",
+                        "4": "2026-12-05",
+                        "5": "2026-12-10",
+                        "6": "2026-12-11",
+                        "7": "2026-12-11",
+                        "8": "2026-12-09",
+                        "9": "2026-12-10"
+                    },
+                    "12": {
+                        "0": "2026-12-09",
+                        "1": "2026-12-07",
+                        "2": "2026-12-04",
+                        "3": "2026-12-04",
+                        "4": "2026-12-07",
+                        "5": "2026-12-10",
+                        "6": "2026-12-08",
+                        "7": "2026-12-08",
+                        "8": "2026-12-09",
+                        "9": "2026-12-10"
+                    }
                 }
             }
         };
@@ -495,7 +524,7 @@
             directory: { title: "Directorio de Clientes", subtitle: "Registro y edición de clientes, RIF, tipo de contribuyente y correo" },
             consult: { title: "Recibos y Consultas", subtitle: "Consulta por grupo o empresa y descarga de recibos PNG" },
             periods: { title: "Filtro por Periodo / Mes", subtitle: "Revisión de compromisos agrupados por mes" },
-            alerts: { title: "Alertas y Vencimientos", subtitle: "Recordatorios de calendario SPE / DPP y compromisos vencidos" }
+            alerts: { title: "Alertas y Vencimientos", subtitle: "Recordatorios de calendario SPE / DPP / ISLR y compromisos vencidos" }
         };
 
         const seniatSpeTaxes = [
@@ -546,17 +575,12 @@
         function normalizeTaxpayerType(val) {
             if (!val) return TAXPAYER_SPNE;
             const upper = String(val).toUpperCase();
-            if (upper.startsWith("SPE") || upper.includes("ESPECIAL") && !upper.includes("NO ESPECIAL")) {
+            if (upper.startsWith("SPE") || (upper.includes("ESPECIAL") && !upper.includes("NO ESPECIAL"))) {
                 return TAXPAYER_SPE;
             }
             return TAXPAYER_SPNE;
         }
 
-        /**
-         * Extrae el último dígito del RIF (el dígito ubicado después del último guion,
-         * o el último dígito numérico si el RIF no tiene guiones).
-         * Ej: "J-12345678-9" -> "9" | "V-01234567-0" -> "0"
-         */
         function getRifTerminalDigit(rif) {
             if (!rif) return null;
             const clean = String(rif).trim().toUpperCase();
@@ -569,6 +593,10 @@
             }
             const allDigits = clean.replace(/\D/g, '');
             return allDigits.length > 0 ? allDigits.charAt(allDigits.length - 1) : null;
+        }
+
+        function isWithin2026(dateStr) {
+            return typeof dateStr === 'string' && dateStr.startsWith('2026-');
         }
 
         function setSyncLabel(text) {
@@ -974,15 +1002,12 @@
         function getCalendarReminders(todayDate) {
             const reminders = [];
             const year = todayDate.getFullYear();
-            const monthNum = String(todayDate.getMonth() + 1).padStart(2, '0');
-            const monthName = MONTH_NAMES_ES[monthNum];
-            if (!monthName) return reminders;
+            if (year !== 2026) return reminders;
 
-            const periodLabel = `${monthName} ${year}`;
             const windowLimit = new Date(todayDate);
             windowLimit.setDate(todayDate.getDate() + REMINDER_DAYS_AHEAD);
 
-            const isAlreadyRegistered = (client, taxName, dueDateStr, calendarKey) => {
+            const isAlreadyRegistered = (client, taxName, periodLabel, dueDateStr, calendarKey) => {
                 const clientRifClean = (client.rif || '').toLowerCase().replace(/[^a-z0-9]/g, '');
                 const clientNameNorm = normalizeSearchText(client.name);
                 return obligations.some(o => {
@@ -1001,50 +1026,60 @@
                 if (terminal === null) return;
 
                 const tType = normalizeTaxpayerType(client.taxpayerType);
+                const isSpe = tType === TAXPAYER_SPE;
 
-                if (tType === TAXPAYER_SPE && taxCalendars.SPE?.months?.[monthNum]) {
-                    const monthData = taxCalendars.SPE.months[monthNum];
-                    [
-                        { key: 'q1', label: '1ra Quincena (01 al 15)' },
-                        { key: 'q2', label: '2da Quincena (16 al cierre)' }
-                    ].forEach(tramo => {
-                        const dueDateStr = monthData[tramo.key]?.[terminal];
-                        if (!dueDateStr) return;
+                if (isSpe && taxCalendars.SPE?.months) {
+                    ["11", "12"].forEach(monthNum => {
+                        const monthData = taxCalendars.SPE.months[monthNum];
+                        if (!monthData) return;
+                        const periodLabel = `${MONTH_NAMES_ES[monthNum]} 2026`;
 
-                        const dueObj = new Date(dueDateStr + 'T00:00:00');
-                        if (isNaN(dueObj.getTime()) || dueObj > windowLimit) return;
+                        [
+                            { key: 'q1', label: '1ra Quincena (01 al 15)' },
+                            { key: 'q2', label: '2da Quincena (16 al cierre)' }
+                        ].forEach(tramo => {
+                            const dueDateStr = monthData[tramo.key]?.[terminal];
+                            if (!dueDateStr || !isWithin2026(dueDateStr)) return;
 
-                        (taxCalendars.SPE.taxes || []).forEach(taxName => {
-                            const calendarKey = `SPE-${year}-${monthNum}-${tramo.key}-${client.id}-${taxName}`;
-                            if (!isAlreadyRegistered(client, taxName, dueDateStr, calendarKey)) {
-                                reminders.push({
-                                    calendarKey,
-                                    source: 'Calendario SPE',
-                                    tramoLabel: tramo.label,
-                                    terminal,
-                                    clientId: client.id,
-                                    rif: client.rif,
-                                    clientName: client.name,
-                                    group: client.group || '',
-                                    clientEmail: client.email || '',
-                                    category: 'Impuestos Nacionales (SENIAT)',
-                                    taxType: taxName,
-                                    period: periodLabel,
-                                    dueDate: dueDateStr,
-                                    isOverdue: dueObj < todayDate
-                                });
-                            }
+                            const dueObj = new Date(dueDateStr + 'T00:00:00');
+                            if (isNaN(dueObj.getTime()) || dueObj > windowLimit) return;
+
+                            (taxCalendars.SPE.taxes || []).forEach(taxName => {
+                                const calendarKey = `SPE-2026-${monthNum}-${tramo.key}-${client.id}-${taxName}`;
+                                if (!isAlreadyRegistered(client, taxName, periodLabel, dueDateStr, calendarKey)) {
+                                    reminders.push({
+                                        calendarKey,
+                                        source: 'Calendario SPE',
+                                        tramoLabel: tramo.label,
+                                        terminal,
+                                        clientId: client.id,
+                                        rif: client.rif,
+                                        clientName: client.name,
+                                        group: client.group || '',
+                                        clientEmail: client.email || '',
+                                        category: 'Impuestos Nacionales (SENIAT)',
+                                        taxType: taxName,
+                                        period: periodLabel,
+                                        dueDate: dueDateStr,
+                                        isOverdue: dueObj < todayDate
+                                    });
+                                }
+                            });
                         });
                     });
                 }
 
-                const dppDueStr = taxCalendars.DPP?.months?.[monthNum]?.[terminal];
-                if (dppDueStr) {
-                    const dppDueObj = new Date(dppDueStr + 'T00:00:00');
-                    if (!isNaN(dppDueObj.getTime()) && dppDueObj <= windowLimit) {
+                if (taxCalendars.DPP?.months) {
+                    ["11", "12"].forEach(monthNum => {
+                        const dppDueStr = taxCalendars.DPP.months[monthNum]?.[terminal];
+                        if (!dppDueStr || !isWithin2026(dppDueStr)) return;
+                        const dppDueObj = new Date(dppDueStr + 'T00:00:00');
+                        if (isNaN(dppDueObj.getTime()) || dppDueObj > windowLimit) return;
+
+                        const periodLabel = `${MONTH_NAMES_ES[monthNum]} 2026`;
                         const dppTax = taxCalendars.DPP.tax || 'Contribución a las Pensiones';
-                        const calendarKey = `DPP-${year}-${monthNum}-${client.id}-${dppTax}`;
-                        if (!isAlreadyRegistered(client, dppTax, dppDueStr, calendarKey)) {
+                        const calendarKey = `DPP-2026-${monthNum}-${client.id}-${dppTax}`;
+                        if (!isAlreadyRegistered(client, dppTax, periodLabel, dppDueStr, calendarKey)) {
                             reminders.push({
                                 calendarKey,
                                 source: 'Calendario Pensiones (DPP)',
@@ -1062,17 +1097,44 @@
                                 isOverdue: dppDueObj < todayDate
                             });
                         }
-                    }
+                    });
+                }
+
+                if (isSpe && taxCalendars.RISLR?.months) {
+                    ["11", "12"].forEach(monthNum => {
+                        const rislrDueStr = taxCalendars.RISLR.months[monthNum]?.[terminal];
+                        if (!rislrDueStr || !isWithin2026(rislrDueStr)) return;
+                        const rislrDueObj = new Date(rislrDueStr + 'T00:00:00');
+                        if (isNaN(rislrDueObj.getTime()) || rislrDueObj > windowLimit) return;
+
+                        const periodLabel = `${MONTH_NAMES_ES[monthNum]} 2026`;
+                        const rislrTax = taxCalendars.RISLR.tax || 'RISLR - Retenciones de ISLR';
+                        const calendarKey = `RISLR-SPE-2026-${monthNum}-${client.id}-${rislrTax}`;
+                        if (!isAlreadyRegistered(client, rislrTax, periodLabel, rislrDueStr, calendarKey)) {
+                            reminders.push({
+                                calendarKey,
+                                source: 'Aviso Retenciones ISLR (SPE)',
+                                tramoLabel: 'Declaración y Enteramiento',
+                                terminal,
+                                clientId: client.id,
+                                rif: client.rif,
+                                clientName: client.name,
+                                group: client.group || '',
+                                clientEmail: client.email || '',
+                                category: 'Impuestos Nacionales (SENIAT)',
+                                taxType: rislrTax,
+                                period: periodLabel,
+                                dueDate: rislrDueStr,
+                                isOverdue: rislrDueObj < todayDate
+                            });
+                        }
+                    });
                 }
             });
 
             return reminders.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
         }
 
-        /**
-         * Consolida items en UN SOLO correo por Grupo (si tiene `group`)
-         * o por cliente individual (si no tiene `group`).
-         */
         function buildConsolidatedDispatchPayload(items) {
             const clientMap = new Map();
             clients.forEach(c => {
@@ -1289,6 +1351,30 @@
 
         function markAsPaid(id) {
             obligations = obligations.map(o => o.id === id ? { ...o, status: 'Pagado' } : o);
+            saveData();
+        }
+
+        function markAllClientObligationsAsPaid(clientName) {
+            if (!clientName) return;
+            const pendingCount = obligations.filter(
+                o => o.clientName === clientName && o.status !== 'Pagado'
+            ).length;
+
+            if (pendingCount === 0) {
+                alert(`"${clientName}" no tiene obligaciones pendientes por pagar.`);
+                return;
+            }
+
+            if (!confirm(`¿Marcar como PAGADAS las ${pendingCount} obligación(es) pendiente(s) de "${clientName}"?`)) {
+                return;
+            }
+
+            obligations = obligations.map(o =>
+                o.clientName === clientName && o.status !== 'Pagado'
+                    ? { ...o, status: 'Pagado' }
+                    : o
+            );
+
             saveData();
         }
 
@@ -1947,7 +2033,7 @@
             updateNavTabStyles();
 
             obligations.forEach(o => {
-                if (o.status !== 'Pagado' && o.dueDate) {
+                if (o.status !== 'Pagado' && o.dueDate && isWithin2026(String(o.dueDate))) {
                     const due = new Date(o.dueDate + 'T00:00:00');
                     const matchedClient = resolveMatchingClient(o.rif, o.clientName);
                     if (due < today) {
@@ -2070,14 +2156,18 @@
                 let groupHtml = '';
                 for(const [clientName, items] of Object.entries(mapByClient)) {
                     const clientSubtotal = items.reduce((acc, item) => acc + parseToNumber(item.amountStr), 0);
+                    const safeClientAttr = encodeURIComponent(clientName);
                     groupHtml += `
                         <details class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden group">
-                            <summary class="p-3.5 bg-slate-950/80 hover:bg-slate-800/70 cursor-pointer flex justify-between items-center gap-2 text-sm font-semibold select-none">
+                            <summary class="p-3.5 bg-slate-950/80 hover:bg-slate-800/70 cursor-pointer flex flex-wrap justify-between items-center gap-2 text-sm font-semibold select-none">
                                 <div class="flex items-center gap-2 min-w-0">
                                     <span class="text-white truncate">${clientName}</span>
                                     <span class="text-[11px] bg-slate-900 text-slate-300 border border-slate-700 px-2 py-0.5 rounded-full font-mono font-medium shrink-0">${items.length}</span>
                                 </div>
-                                <div class="flex items-center gap-3 shrink-0">
+                                <div class="flex items-center gap-2.5 shrink-0">
+                                    <button type="button" onclick="event.preventDefault(); event.stopPropagation(); markAllClientObligationsAsPaid(decodeURIComponent('${safeClientAttr}'))" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-lg text-[11px] font-medium transition">
+                                        Pagar todo
+                                    </button>
                                     <span class="font-mono text-xs text-slate-200">Bs. ${formatCurrency(clientSubtotal)}</span>
                                     <span class="text-[11px] text-slate-400 font-normal group-open:rotate-180 transition">▼</span>
                                 </div>
