@@ -164,7 +164,7 @@
                                 <span id="menu-alerts-badge" class="text-[11px] bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono font-medium">0 alerta(s)</span>
                             </div>
                             <div class="text-sm font-semibold text-white">Alertas y Vencimientos</div>
-                            <p class="text-xs text-slate-400 leading-relaxed">Recordatorios de calendario SPE / DPP / ISLR y obligaciones vencidas o a 2 días de vencer.</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">Recordatorios de calendario SPE / DPP / ISLR, RPVH (5 días hábiles) y vencimientos a 2 días.</p>
                         </button>
                     </div>
                 </div>
@@ -372,7 +372,7 @@
                     <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
                         <div>
                             <h3 class="text-base font-bold text-white">Vencimientos y alertas</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">Recordatorios de calendario SPE / DPP / ISLR y obligaciones vencidas o a 2 días de vencer</p>
+                            <p class="text-xs text-slate-400 mt-0.5">Recordatorios de calendario SPE / DPP / ISLR, RPVH (5 días hábiles) y obligaciones vencidas o a 2 días de vencer</p>
                         </div>
                     </div>
                     <div id="grouped-mail-dispatch-bar" class="space-y-2"></div>
@@ -392,6 +392,8 @@
         const TAXPAYER_SPE = "SPE - Sujeto Pasivo Especial";
 
         const REMINDER_DAYS_AHEAD = 3;
+        const RPVH_BUSINESS_DAYS = 5;
+        const RPVH_ALERT_DAYS_BEFORE_DUE = 2;
 
         const MONTH_NAMES_ES = {
             "01": "Enero",
@@ -524,7 +526,7 @@
             directory: { title: "Directorio de Clientes", subtitle: "Registro y edición de clientes, RIF, tipo de contribuyente y correo" },
             consult: { title: "Recibos y Consultas", subtitle: "Consulta por grupo o empresa y descarga de recibos PNG" },
             periods: { title: "Filtro por Periodo / Mes", subtitle: "Revisión de compromisos agrupados por mes" },
-            alerts: { title: "Alertas y Vencimientos", subtitle: "Recordatorios de calendario SPE / DPP / ISLR y compromisos vencidos" }
+            alerts: { title: "Alertas y Vencimientos", subtitle: "Recordatorios de calendario SPE / DPP / ISLR, RPVH (5 días hábiles) y vencimientos" }
         };
 
         const seniatSpeTaxes = [
@@ -597,6 +599,43 @@
 
         function isWithin2026(dateStr) {
             return typeof dateStr === 'string' && dateStr.startsWith('2026-');
+        }
+
+        function isRpvhTax(taxType) {
+            return String(taxType || '').toUpperCase().includes('RPVH');
+        }
+
+        function addBusinessDays(startDate, businessDays) {
+            const cursor = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+            let added = 0;
+            while (added < businessDays) {
+                cursor.setDate(cursor.getDate() + 1);
+                const day = cursor.getDay();
+                if (day !== 0 && day !== 6) {
+                    added++;
+                }
+            }
+            return cursor;
+        }
+
+        function toIsoDateLocal(dateObj) {
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function getRpvhEffectiveDueDate(obligation, todayDate) {
+            if (obligation.dueDate && isWithin2026(String(obligation.dueDate))) {
+                return new Date(String(obligation.dueDate) + 'T00:00:00');
+            }
+            const baseDate = obligation.createdAt
+                ? new Date(String(obligation.createdAt) + 'T00:00:00')
+                : (obligation.id && Number(obligation.id) > 1000000000000
+                    ? new Date(Number(obligation.id))
+                    : todayDate);
+            const safeBase = isNaN(baseDate.getTime()) ? todayDate : baseDate;
+            return addBusinessDays(safeBase, RPVH_BUSINESS_DAYS);
         }
 
         function setSyncLabel(text) {
@@ -1337,6 +1376,13 @@
             const rawAmount = document.getElementById('ob-amount').value;
             const formattedAmount = cleanAndFormatAmountInput(rawAmount);
 
+            const selectedTax = document.getElementById('ob-tax').value;
+            const selectedDueDate = document.getElementById('ob-duedate').value;
+            const todayIso = toIsoDateLocal(new Date());
+            const computedDueDate = isRpvhTax(selectedTax)
+                ? toIsoDateLocal(addBusinessDays(new Date(todayIso + 'T00:00:00'), RPVH_BUSINESS_DAYS))
+                : selectedDueDate;
+
             if (editId) {
                 obligations = obligations.map(o => o.id == editId ? {
                     ...o,
@@ -1346,24 +1392,25 @@
                     clientName: finalClientName,
                     group: finalGroup,
                     category: document.getElementById('ob-category').value,
-                    taxType: document.getElementById('ob-tax').value,
+                    taxType: selectedTax,
                     period: document.getElementById('ob-period').value,
-                    dueDate: document.getElementById('ob-duedate').value,
+                    dueDate: computedDueDate || selectedDueDate,
                     amountStr: formattedAmount,
                     status: document.getElementById('ob-status').value
                 } : o);
             } else {
                 const newOb = {
                     id: Date.now(),
+                    createdAt: todayIso,
                     clientId: matchedClient ? matchedClient.id : null,
                     calendarKey,
                     rif: finalRif,
                     clientName: finalClientName,
                     group: finalGroup,
                     category: document.getElementById('ob-category').value,
-                    taxType: document.getElementById('ob-tax').value,
+                    taxType: selectedTax,
                     period: document.getElementById('ob-period').value,
-                    dueDate: document.getElementById('ob-duedate').value,
+                    dueDate: computedDueDate || selectedDueDate,
                     amountStr: formattedAmount,
                     status: document.getElementById('ob-status').value
                 };
@@ -2068,7 +2115,7 @@
         function renderAll() {
             const today = new Date();
             today.setHours(0,0,0,0);
-            const limitDate = new Date();
+            const limitDate = new Date(today);
             limitDate.setDate(today.getDate() + 2);
 
             let alertItems = [];
@@ -2079,13 +2126,37 @@
             updateNavTabStyles();
 
             obligations.forEach(o => {
-                if (o.status !== 'Pagado' && o.dueDate && isWithin2026(String(o.dueDate))) {
+                if (o.status === 'Pagado') return;
+                const matchedClient = resolveMatchingClient(o.rif, o.clientName);
+                const groupVal = o.group || matchedClient?.group || '';
+                const emailVal = matchedClient?.email || '';
+
+                if (isRpvhTax(o.taxType)) {
+                    const rpvhDue = getRpvhEffectiveDueDate(o, today);
+                    const rpvhAlertThreshold = new Date(rpvhDue);
+                    rpvhAlertThreshold.setDate(rpvhDue.getDate() - RPVH_ALERT_DAYS_BEFORE_DUE);
+
+                    if (today >= rpvhAlertThreshold) {
+                        const alertType = rpvhDue < today
+                            ? 'RPVH Vencido (5 días hábiles)'
+                            : 'RPVH a 2 días de vencer (5 días hábiles)';
+                        alertItems.push({
+                            ...o,
+                            dueDate: o.dueDate || toIsoDateLocal(rpvhDue),
+                            alertType,
+                            group: groupVal,
+                            clientEmail: emailVal
+                        });
+                    }
+                    return;
+                }
+
+                if (o.dueDate && isWithin2026(String(o.dueDate))) {
                     const due = new Date(o.dueDate + 'T00:00:00');
-                    const matchedClient = resolveMatchingClient(o.rif, o.clientName);
                     if (due < today) {
-                        alertItems.push({ ...o, alertType: 'Vencido', group: o.group || matchedClient?.group || '', clientEmail: matchedClient?.email || '' });
+                        alertItems.push({ ...o, alertType: 'Vencido', group: groupVal, clientEmail: emailVal });
                     } else if (due <= limitDate) {
-                        alertItems.push({ ...o, alertType: 'Por Vencer', group: o.group || matchedClient?.group || '', clientEmail: matchedClient?.email || '' });
+                        alertItems.push({ ...o, alertType: 'Por Vencer', group: groupVal, clientEmail: emailVal });
                     }
                 }
             });
@@ -2167,12 +2238,12 @@
                 } else if (alertItems.length === 0) {
                     alertsResultsEl.innerHTML = '';
                 } else {
-                    let alertsHtml = `<div class="text-xs font-bold uppercase tracking-wider text-slate-400 pt-1">Obligaciones registradas vencidas o por vencer (${alertItems.length})</div>`;
+                    let alertsHtml = `<div class="text-xs font-bold uppercase tracking-wider text-slate-400 pt-1">Obligaciones registradas vencidas o a 2 días de vencer (${alertItems.length})</div>`;
                     alertItems.forEach(item => {
                         alertsHtml += `
                             <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex justify-between items-start gap-4 text-sm">
                                 <div class="space-y-1">
-                                    <div class="font-semibold text-white">${item.clientName} · <span class="text-xs font-medium text-slate-300">${item.alertType}</span>${item.group ? ` · <span class="text-xs text-blue-300">${item.group}</span>` : ''}</div>
+                                    <div class="font-semibold text-white">${item.clientName} · <span class="text-xs font-medium text-amber-300">${item.alertType}</span>${item.group ? ` · <span class="text-xs text-blue-300">${item.group}</span>` : ''}</div>
                                     <div class="text-slate-200 text-xs">${item.taxType}</div>
                                     <div class="text-[11px] text-slate-400">${item.period} · Vence ${formatDate(item.dueDate)} · ${item.status}${item.clientEmail ? ` · ${item.clientEmail}` : ''}</div>
                                 </div>
