@@ -4,27 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Legal y Contable, S.C. - Control Tributario</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['"Times New Roman"', 'Times', 'serif'],
-                        serif: ['"Times New Roman"', 'Times', 'serif'],
-                        mono: ['"Times New Roman"', 'Times', 'serif']
+                        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
                     }
                 }
             }
         }
     </script>
-    <style>
-        body, input, select, button, textarea {
-            font-family: "Times New Roman", Times, serif;
-        }
-    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-serif min-h-screen flex flex-col p-4 antialiased">
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col p-4 antialiased">
 
     <!-- APLICACIÓN PRINCIPAL -->
     <div id="main-app" class="w-full max-w-6xl mx-auto bg-slate-900 min-h-[88vh] rounded-2xl border border-slate-800 shadow-xl overflow-hidden flex flex-col md:flex-row">
@@ -35,12 +32,12 @@
                 <div class="p-5 border-b border-slate-800 flex items-center justify-between">
                     <div>
                         <div class="text-base font-bold text-white tracking-tight">Legal y Contable, S.C.</div>
-                        <div class="text-xs text-slate-400">Control Tributario</div>
+                        <div class="text-[11px] text-slate-400">Control Tributario</div>
                     </div>
-                    <span class="text-xs bg-slate-900 text-slate-200 border border-slate-700 px-2 py-0.5 rounded font-semibold">2026</span>
+                    <span class="text-[10px] bg-slate-900 text-slate-200 border border-slate-700 px-2 py-0.5 rounded font-semibold">2026</span>
                 </div>
 
-                <div class="px-4 pt-4 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                <div class="px-4 pt-4 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                     Navegación
                 </div>
 
@@ -77,7 +74,7 @@
             </div>
 
             <div class="p-4 border-t border-slate-800">
-                <div id="sync-status" class="text-xs text-slate-200 font-medium bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl text-center">
+                <div id="sync-status" class="text-[11px] text-slate-200 font-medium bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl text-center">
                     ☁️ Sincronizado con Firebase
                 </div>
             </div>
@@ -88,11 +85,11 @@
             <!-- BARRA SUPERIOR DEL MÓDULO -->
             <header class="bg-slate-950/70 border-b border-slate-800 px-6 py-4 flex flex-wrap justify-between items-center gap-3">
                 <div>
-                    <h2 id="module-title" class="text-lg font-bold text-white">Menú Principal</h2>
+                    <h2 id="module-title" class="text-base font-bold text-white">Menú Principal</h2>
                     <p id="module-subtitle" class="text-xs text-slate-400">Seleccione la operación que desea realizar</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span id="home-sync-status" class="text-xs text-slate-200 font-medium bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
+                    <span id="home-sync-status" class="text-[11px] text-slate-200 font-medium bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
                         ☁️ Sincronizado con Firebase
                     </span>
                     <button onclick="switchTab('menu')" id="btn-back-menu" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 px-3.5 py-1.5 rounded-xl text-xs font-medium transition">
@@ -110,54 +107,54 @@
                         <button onclick="switchTab('dashboard')" class="text-left bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 p-5 rounded-2xl transition group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">📝</span>
-                                <span id="menu-pending-badge" class="text-xs bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full tabular-nums font-medium">0 pendiente(s)</span>
+                                <span id="menu-pending-badge" class="text-[11px] bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono font-medium">0 pendiente(s)</span>
                             </div>
-                            <div class="text-base font-semibold text-white">Registrar Obligación</div>
+                            <div class="text-sm font-semibold text-white">Registrar Obligación</div>
                             <p class="text-xs text-slate-400 leading-relaxed">Cargar nuevos tributos (SENIAT, municipales o parafiscales) y ver registros agrupados.</p>
                         </button>
 
                         <button onclick="switchTab('groups')" class="text-left bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 p-5 rounded-2xl transition group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">🗂️</span>
-                                <span id="menu-groups-badge" class="text-xs bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full tabular-nums font-medium">0 grupo(s)</span>
+                                <span id="menu-groups-badge" class="text-[11px] bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono font-medium">0 grupo(s)</span>
                             </div>
-                            <div class="text-base font-semibold text-white">Verificar Grupos</div>
+                            <div class="text-sm font-semibold text-white">Verificar Grupos</div>
                             <p class="text-xs text-slate-400 leading-relaxed">Consultar grupos corporativos, ver empresas asociadas o crear nuevos grupos.</p>
                         </button>
 
                         <button onclick="switchTab('directory')" class="text-left bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 p-5 rounded-2xl transition group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">🏢</span>
-                                <span id="menu-clients-badge" class="text-xs bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full tabular-nums font-medium">0 cliente(s)</span>
+                                <span id="menu-clients-badge" class="text-[11px] bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono font-medium">0 cliente(s)</span>
                             </div>
-                            <div class="text-base font-semibold text-white">Directorio de Clientes</div>
+                            <div class="text-sm font-semibold text-white">Directorio de Clientes</div>
                             <p class="text-xs text-slate-400 leading-relaxed">Administrar RIF, razones sociales, teléfonos y asignación de grupos.</p>
                         </button>
 
                         <button onclick="switchTab('consult')" class="text-left bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 p-5 rounded-2xl transition group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">🧾</span>
-                                <span class="text-xs bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-medium">PNG B/N</span>
+                                <span class="text-[11px] bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-medium">PNG B/N</span>
                             </div>
-                            <div class="text-base font-semibold text-white">Consultar y Generar Recibos</div>
+                            <div class="text-sm font-semibold text-white">Consultar y Generar Recibos</div>
                             <p class="text-xs text-slate-400 leading-relaxed">Revisar saldos por empresa o grupo y descargar recibos en blanco y negro.</p>
                         </button>
 
                         <button onclick="switchTab('periods')" class="text-left bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 p-5 rounded-2xl transition group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">📅</span>
-                                <span class="text-xs bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-medium">Mensual</span>
+                                <span class="text-[11px] bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-medium">Mensual</span>
                             </div>
-                            <div class="text-base font-semibold text-white">Filtro por Periodo / Mes</div>
+                            <div class="text-sm font-semibold text-white">Filtro por Periodo / Mes</div>
                             <p class="text-xs text-slate-400 leading-relaxed">Filtrar obligaciones registradas por mes y ver el monto acumulado del periodo.</p>
                         </button>
 
                         <button onclick="switchTab('alerts')" id="menu-card-alerts" class="text-left bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 p-5 rounded-2xl transition group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">⚠️</span>
-                                <span id="menu-alerts-badge" class="text-xs bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full tabular-nums font-medium">0 alerta(s)</span>
+                                <span id="menu-alerts-badge" class="text-[11px] bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono font-medium">0 alerta(s)</span>
                             </div>
-                            <div class="text-base font-semibold text-white">Alertas y Vencimientos</div>
+                            <div class="text-sm font-semibold text-white">Alertas y Vencimientos</div>
                             <p class="text-xs text-slate-400 leading-relaxed">Verificar obligaciones vencidas o próximas a vencer (en 2 días o menos).</p>
                         </button>
                     </div>
@@ -166,7 +163,7 @@
                 <!-- 1. DASHBOARD / REGISTRO -->
                 <div id="tab-dashboard" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="bg-slate-950/70 p-5 rounded-2xl border border-slate-800 h-fit">
-                        <h3 id="obligation-form-title" class="text-base font-semibold mb-4 text-white border-b border-slate-800 pb-2.5">Registrar Obligación</h3>
+                        <h3 id="obligation-form-title" class="text-sm font-semibold mb-4 text-white border-b border-slate-800 pb-2.5">Registrar Obligación</h3>
                         <form onsubmit="saveObligation(event)" class="space-y-3 text-sm">
                             <input type="hidden" id="obligation-edit-id" />
                             <div>
@@ -215,7 +212,7 @@
                             </div>
                             <div>
                                 <label class="text-xs font-medium text-slate-300 mb-1 block">Monto (Bs.) *</label>
-                                <input type="text" id="ob-amount" required placeholder="Ej: 1985,36 o 198536" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white tabular-nums font-semibold placeholder-slate-500 focus:border-blue-500 focus:outline-none transition" />
+                                <input type="text" id="ob-amount" required placeholder="Ej: 1985,36 o 198536" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white font-mono font-semibold placeholder-slate-500 focus:border-blue-500 focus:outline-none transition" />
                             </div>
                             <div>
                                 <label class="text-xs font-medium text-slate-300 mb-1 block">Estado</label>
@@ -235,7 +232,7 @@
 
                     <!-- REGISTROS RECIENTES AGRUPADOS POR EMPRESA -->
                     <div class="lg:col-span-2 bg-slate-950/70 p-5 rounded-2xl border border-slate-800 space-y-4">
-                        <h3 class="text-base font-semibold mb-2 text-white border-b border-slate-800 pb-2.5">Registros recientes (Agrupados por empresa)</h3>
+                        <h3 class="text-sm font-semibold mb-2 text-white border-b border-slate-800 pb-2.5">Registros recientes (Agrupados por empresa)</h3>
                         <div id="obligations-grouped-list" class="space-y-3"></div>
                     </div>
                 </div>
@@ -243,7 +240,7 @@
                 <!-- 2. GRUPOS -->
                 <div id="tab-groups" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-slate-950/70 p-5 rounded-2xl border border-slate-800 h-fit">
-                        <h3 class="text-base font-semibold mb-4 text-white border-b border-slate-800 pb-2.5">Nuevo grupo de empresas</h3>
+                        <h3 class="text-sm font-semibold mb-4 text-white border-b border-slate-800 pb-2.5">Nuevo grupo de empresas</h3>
                         <form onsubmit="saveGroup(event)" class="space-y-3 text-sm">
                             <div>
                                 <label class="text-xs font-medium text-slate-300 mb-1 block">Nombre del grupo *</label>
@@ -253,7 +250,7 @@
                         </form>
                     </div>
                     <div class="md:col-span-2 bg-slate-950/70 p-5 rounded-2xl border border-slate-800 space-y-3">
-                        <h3 class="text-base font-semibold mb-4 text-white border-b border-slate-800 pb-2.5">Grupos registrados</h3>
+                        <h3 class="text-sm font-semibold mb-4 text-white border-b border-slate-800 pb-2.5">Grupos registrados</h3>
                         <div id="groups-list" class="space-y-2.5"></div>
                     </div>
                 </div>
@@ -261,7 +258,7 @@
                 <!-- 3. CLIENTES -->
                 <div id="tab-directory" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-slate-950/70 p-5 rounded-2xl border border-slate-800 h-fit">
-                        <h3 id="client-form-title" class="text-base font-semibold mb-4 text-white border-b border-slate-800 pb-2.5">Nuevo cliente</h3>
+                        <h3 id="client-form-title" class="text-sm font-semibold mb-4 text-white border-b border-slate-800 pb-2.5">Nuevo cliente</h3>
                         <form onsubmit="saveClient(event)" class="space-y-3 text-sm">
                             <input type="hidden" id="client-edit-id" />
                             <div>
@@ -289,7 +286,7 @@
                         </form>
                     </div>
                     <div class="md:col-span-2 bg-slate-950/70 p-5 rounded-2xl border border-slate-800 space-y-3">
-                        <h3 class="text-base font-semibold mb-4 text-white border-b border-slate-800 pb-2.5">Directorio activo de clientes</h3>
+                        <h3 class="text-sm font-semibold mb-4 text-white border-b border-slate-800 pb-2.5">Directorio activo de clientes</h3>
                         <div id="clients-list" class="space-y-2.5"></div>
                     </div>
                 </div>
@@ -669,7 +666,7 @@
             box.innerHTML = matches.slice(0, 6).map(c => `
                 <button type="button" onclick="selectClientSuggestion(${c.id})" class="w-full text-left px-3 py-2 hover:bg-slate-800 transition flex justify-between items-center gap-2 text-xs">
                     <span class="font-semibold text-white truncate">${c.name}</span>
-                    <span class="tabular-nums text-xs text-slate-400 shrink-0">${c.rif || 'S/N'}</span>
+                    <span class="font-mono text-[11px] text-slate-400 shrink-0">${c.rif || 'S/N'}</span>
                 </button>
             `).join('');
             box.classList.remove('hidden');
@@ -872,7 +869,7 @@
                     html += `<div class="bg-slate-950/70 p-3.5 rounded-xl border border-slate-800 space-y-2">
                         <div class="flex justify-between items-center text-xs">
                             <span class="font-semibold text-slate-200">${catName}</span>
-                            <span class="tabular-nums font-semibold text-slate-200">Bs. ${formatCurrency(catData.subtotal)}</span>
+                            <span class="font-mono font-semibold text-slate-200">Bs. ${formatCurrency(catData.subtotal)}</span>
                         </div>
                         <div class="divide-y divide-slate-800/80">`;
                     catData.items.forEach(o => {
@@ -880,9 +877,9 @@
                             <div class="py-2 flex justify-between items-start gap-3 text-xs">
                                 <div>
                                     <div class="font-medium text-white">${o.taxType}</div>
-                                    <div class="text-xs text-slate-400">${o.period} · Vence ${formatDate(o.dueDate)}</div>
+                                    <div class="text-[11px] text-slate-400">${o.period} · Vence ${formatDate(o.dueDate)}</div>
                                 </div>
-                                <span class="tabular-nums font-semibold text-white shrink-0">Bs. ${o.amountStr}</span>
+                                <span class="font-mono font-semibold text-white shrink-0">Bs. ${o.amountStr}</span>
                             </div>
                         `;
                     });
@@ -893,7 +890,7 @@
                     </div>
                     <div class="flex justify-between items-center text-white font-bold text-sm pt-2 border-t border-slate-800">
                         <span class="text-slate-300 font-semibold">Total pendiente</span>
-                        <span class="tabular-nums text-base text-white">Bs. ${formatCurrency(total)}</span>
+                        <span class="font-mono text-base text-white">Bs. ${formatCurrency(total)}</span>
                     </div>
                 </div>
             `;
@@ -936,8 +933,8 @@
                         <div class="flex flex-wrap justify-between items-center gap-2">
                             <div class="font-semibold text-white text-sm">${client.name}</div>
                             <div class="flex items-center gap-2.5">
-                                <span class="tabular-nums text-xs font-semibold text-slate-200">Bs. ${formatCurrency(clientTotal)}</span>
-                                ${clientObs.length > 0 ? `<button onclick="downloadImageReceipt('${client.name}', false)" class="bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 px-2.5 py-1 rounded-lg text-xs font-medium transition">PNG</button>` : ''}
+                                <span class="font-mono text-xs font-semibold text-slate-200">Bs. ${formatCurrency(clientTotal)}</span>
+                                ${clientObs.length > 0 ? `<button onclick="downloadImageReceipt('${client.name}', false)" class="bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-medium transition">PNG</button>` : ''}
                             </div>
                         </div>
                 `;
@@ -946,18 +943,18 @@
                 } else {
                     for (const [catName, catData] of Object.entries(byCat)) {
                         html += `<div class="bg-slate-950/70 p-3 rounded-xl border border-slate-800 space-y-1.5">
-                            <div class="flex justify-between items-center text-xs font-semibold text-slate-300">
+                            <div class="flex justify-between items-center text-[11px] font-semibold text-slate-300">
                                 <span>${catName}</span>
-                                <span class="tabular-nums text-slate-200">Bs. ${formatCurrency(catData.subtotal)}</span>
+                                <span class="font-mono text-slate-200">Bs. ${formatCurrency(catData.subtotal)}</span>
                             </div>`;
                         catData.items.forEach(o => {
                             html += `
                                 <div class="flex justify-between items-start gap-2 text-slate-300 text-xs pt-1 border-t border-slate-800/80">
                                     <div>
                                         <span class="font-medium text-white">${o.taxType}</span>
-                                        <span class="block text-xs text-slate-400">${o.period} · Vence ${formatDate(o.dueDate)}</span>
+                                        <span class="block text-[11px] text-slate-400">${o.period} · Vence ${formatDate(o.dueDate)}</span>
                                     </div>
-                                    <span class="tabular-nums text-white font-semibold shrink-0">Bs. ${o.amountStr}</span>
+                                    <span class="font-mono text-white font-semibold shrink-0">Bs. ${o.amountStr}</span>
                                 </div>
                             `;
                         });
@@ -971,7 +968,7 @@
             for (const [catName, catSum] of Object.entries(groupCatTotals)) {
                 catSummaryHtml += `<div class="text-xs text-slate-300 flex justify-between">
                     <span>${catName}</span>
-                    <span class="tabular-nums font-medium text-white">Bs. ${formatCurrency(catSum)}</span>
+                    <span class="font-mono font-medium text-white">Bs. ${formatCurrency(catSum)}</span>
                 </div>`;
             }
 
@@ -980,7 +977,7 @@
                     ${catSummaryHtml}
                     <div class="flex justify-between items-center font-bold text-white text-sm pt-2 border-t border-slate-800">
                         <span>Total del grupo</span>
-                        <span class="tabular-nums text-base text-white">Bs. ${formatCurrency(groupGrandTotal)}</span>
+                        <span class="font-mono text-base text-white">Bs. ${formatCurrency(groupGrandTotal)}</span>
                     </div>
                 </div>
             </div>
@@ -1014,11 +1011,11 @@
                             <div>
                                 <div class="font-semibold text-white">${o.clientName}</div>
                                 <div class="text-slate-200 mt-0.5">${o.taxType}</div>
-                                <div class="text-xs text-slate-400 mt-0.5">${o.category} · Vence ${formatDate(o.dueDate)}</div>
+                                <div class="text-[11px] text-slate-400 mt-0.5">${o.category} · Vence ${formatDate(o.dueDate)}</div>
                             </div>
                             <div class="text-right shrink-0 space-y-0.5">
-                                <span class="tabular-nums text-white font-semibold block">Bs. ${o.amountStr}</span>
-                                <span class="text-xs text-slate-400">${o.status}</span>
+                                <span class="font-mono text-white font-semibold block">Bs. ${o.amountStr}</span>
+                                <span class="text-[11px] text-slate-400">${o.status}</span>
                             </div>
                         </div>
                     `;
@@ -1029,7 +1026,7 @@
                     </div>
                     <div class="flex justify-between items-center text-white font-bold text-sm pt-2 border-t border-slate-800">
                         <span class="text-slate-300 font-semibold">Total del periodo</span>
-                        <span class="tabular-nums text-base text-white">Bs. ${formatCurrency(totalPeriod)}</span>
+                        <span class="font-mono text-base text-white">Bs. ${formatCurrency(totalPeriod)}</span>
                     </div>
                 </div>
             `;
@@ -1359,11 +1356,11 @@
                                 <div class="space-y-1">
                                     <div class="font-semibold text-white">${item.clientName} · <span class="text-xs font-medium text-slate-300">${item.alertType}</span></div>
                                     <div class="text-slate-200 text-xs">${item.taxType}</div>
-                                    <div class="text-xs text-slate-400">${item.period} · Vence ${formatDate(item.dueDate)} · ${item.status}</div>
+                                    <div class="text-[11px] text-slate-400">${item.period} · Vence ${formatDate(item.dueDate)} · ${item.status}</div>
                                 </div>
                                 <div class="text-right shrink-0 space-y-2">
-                                    <span class="tabular-nums text-white font-semibold text-sm block">Bs. ${item.amountStr}</span>
-                                    <button onclick="editObligation(${item.id})" class="bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 px-2.5 py-1 rounded-lg text-xs font-medium transition">Editar</button>
+                                    <span class="font-mono text-white font-semibold text-sm block">Bs. ${item.amountStr}</span>
+                                    <button onclick="editObligation(${item.id})" class="bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-medium transition">Editar</button>
                                 </div>
                             </div>
                         `;
@@ -1392,11 +1389,11 @@
                             <summary class="p-3.5 bg-slate-950/80 hover:bg-slate-800/70 cursor-pointer flex justify-between items-center gap-2 text-sm font-semibold select-none">
                                 <div class="flex items-center gap-2 min-w-0">
                                     <span class="text-white truncate">${clientName}</span>
-                                    <span class="text-xs bg-slate-900 text-slate-300 border border-slate-700 px-2 py-0.5 rounded-full tabular-nums font-medium shrink-0">${items.length}</span>
+                                    <span class="text-[11px] bg-slate-900 text-slate-300 border border-slate-700 px-2 py-0.5 rounded-full font-mono font-medium shrink-0">${items.length}</span>
                                 </div>
                                 <div class="flex items-center gap-3 shrink-0">
-                                    <span class="tabular-nums text-xs text-slate-200">Bs. ${formatCurrency(clientSubtotal)}</span>
-                                    <span class="text-xs text-slate-400 font-normal group-open:rotate-180 transition">▼</span>
+                                    <span class="font-mono text-xs text-slate-200">Bs. ${formatCurrency(clientSubtotal)}</span>
+                                    <span class="text-[11px] text-slate-400 font-normal group-open:rotate-180 transition">▼</span>
                                 </div>
                             </summary>
                             <div class="p-3 bg-slate-900 border-t border-slate-800 space-y-2">
@@ -1406,15 +1403,15 @@
                             <div class="bg-slate-950/70 p-3 rounded-xl border border-slate-800 flex flex-wrap justify-between items-start gap-3 text-xs">
                                 <div class="space-y-0.5">
                                     <div class="text-white font-semibold">${item.taxType}</div>
-                                    <div class="text-xs text-slate-400">${item.period} · Vence ${formatDate(item.dueDate)} · ${item.status}</div>
+                                    <div class="text-[11px] text-slate-400">${item.period} · Vence ${formatDate(item.dueDate)} · ${item.status}</div>
                                     <div class="pt-1">
-                                        <span class="text-white tabular-nums font-semibold">Bs. ${item.amountStr}</span>
+                                        <span class="text-white font-mono font-semibold">Bs. ${item.amountStr}</span>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1.5 shrink-0">
-                                    <button onclick="markAsPaid(${item.id})" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 px-2.5 py-1 rounded-lg text-xs font-medium transition">Pagado</button>
-                                    <button onclick="editObligation(${item.id})" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2 py-1 rounded-lg text-xs font-medium transition">Editar</button>
-                                    <button onclick="deleteObligation(${item.id})" class="text-slate-400 hover:text-white px-1.5 py-1 rounded-lg text-xs font-medium transition">Borrar</button>
+                                    <button onclick="markAsPaid(${item.id})" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 px-2.5 py-1 rounded-lg text-[11px] font-medium transition">Pagado</button>
+                                    <button onclick="editObligation(${item.id})" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2 py-1 rounded-lg text-[11px] font-medium transition">Editar</button>
+                                    <button onclick="deleteObligation(${item.id})" class="text-slate-400 hover:text-white px-1.5 py-1 rounded-lg text-[11px] font-medium transition">Borrar</button>
                                 </div>
                             </div>
                         `;
@@ -1454,7 +1451,7 @@
                     <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex justify-between items-center gap-3 text-sm">
                         <div>
                             <div class="font-semibold text-white">${c.name}</div>
-                            <div class="text-slate-400 text-xs mt-0.5"><span class="tabular-nums text-slate-200">${c.rif}</span> · ${c.group || 'Sin grupo'}</div>
+                            <div class="text-slate-400 text-xs mt-0.5"><span class="font-mono text-slate-200">${c.rif}</span> · ${c.group || 'Sin grupo'}</div>
                         </div>
                         <div class="flex items-center gap-1.5 shrink-0">
                             <button onclick="editClient(${c.id})" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded-xl text-xs font-medium transition">Editar</button>
