@@ -73,9 +73,18 @@
                 </nav>
             </div>
 
-            <div class="p-4 border-t border-slate-800">
+            <div class="p-4 border-t border-slate-800 space-y-2">
                 <div id="sync-status" class="text-[11px] text-slate-200 font-medium bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl text-center">
                     ☁️ Sincronizado con Firebase
+                </div>
+                <div class="grid grid-cols-2 gap-1.5">
+                    <button type="button" onclick="exportBackupJson()" class="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-2 py-1.5 rounded-lg text-[10px] font-medium transition text-center">
+                        ⬇ Respaldo
+                    </button>
+                    <label class="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-2 py-1.5 rounded-lg text-[10px] font-medium transition text-center cursor-pointer">
+                        ⬆ Restaurar
+                        <input type="file" accept=".json" onchange="importBackupJson(event)" class="hidden" />
+                    </label>
                 </div>
             </div>
         </aside>
@@ -143,7 +152,7 @@
                         <button onclick="switchTab('periods')" class="text-left bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-600 p-5 rounded-2xl transition group space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-2xl">📅</span>
-                                <span class="text-[11px] bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-medium">Mensual</span>
+                                <span id="menu-periods-badge" class="text-[11px] bg-slate-900 text-slate-200 border border-slate-700 px-2.5 py-0.5 rounded-full font-medium">Mensual</span>
                             </div>
                             <div class="text-sm font-semibold text-white">Filtro por Periodo / Mes</div>
                             <p class="text-xs text-slate-400 leading-relaxed">Filtrar obligaciones registradas por mes y ver el monto acumulado del periodo.</p>
@@ -294,8 +303,19 @@
                             </div>
                         </form>
                     </div>
-                    <div class="md:col-span-2 bg-slate-950/70 p-5 rounded-2xl border border-slate-800 space-y-3">
-                        <h3 class="text-sm font-semibold mb-4 text-white border-b border-slate-800 pb-2.5">Directorio activo de clientes</h3>
+                    <div class="md:col-span-2 bg-slate-950/70 p-5 rounded-2xl border border-slate-800 space-y-4">
+                        <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-800 pb-3">
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-sm font-semibold text-white">Directorio activo de clientes</h3>
+                                <span id="directory-count-badge" class="text-[11px] bg-slate-900 text-slate-300 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono font-medium">0</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <label for="filter-client-group" class="text-xs font-medium text-slate-400">Grupo:</label>
+                                <select id="filter-client-group" onchange="renderClientsList()" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-white text-xs font-medium focus:border-blue-500 focus:outline-none transition">
+                                    <option value="">Todos los grupos</option>
+                                </select>
+                            </div>
+                        </div>
                         <div id="clients-list" class="space-y-2.5"></div>
                     </div>
                 </div>
@@ -409,20 +429,10 @@
             ]
         };
 
-        let groups = JSON.parse(localStorage.getItem('lc_groups_native')) || [
-            { id: 1, name: 'Grupo Empresarial Zulia' },
-            { id: 2, name: 'Consorcio Comercial' }
-        ];
-
-        let clients = JSON.parse(localStorage.getItem('lc_clients_native')) || [
-            { id: 1, rif: 'J-12345678-9', name: 'Comercial El Carmen, C.A.', taxpayerType: TAXPAYER_SPE, group: 'Grupo Empresarial Zulia', phone: '0414-6123456' },
-            { id: 2, rif: 'J-98765432-1', name: 'Inversiones Falcon, F.P.', taxpayerType: TAXPAYER_SPNE, group: 'Consorcio Comercial', phone: '0424-9876543' }
-        ];
-
-        let obligations = JSON.parse(localStorage.getItem('lc_obligations_native')) || [
-            { id: 1, clientName: 'Comercial El Carmen, C.A.', rif: 'J-12345678-9', group: 'Grupo Empresarial Zulia', category: 'Impuestos Nacionales (SENIAT)', taxType: 'RIVA - Retenciones de IVA', period: 'Noviembre 2026', dueDate: '2026-11-18', amountStr: '1.985,36', status: 'Por pagar' },
-            { id: 2, clientName: 'Inversiones Falcon, F.P.', rif: 'J-98765432-1', group: 'Consorcio Comercial', category: 'Impuestos Nacionales (SENIAT)', taxType: 'IVA - Impuesto al Valor Agregado', period: 'Noviembre 2026', dueDate: '2026-11-24', amountStr: '1.985,36', status: 'Por pagar' }
-        ];
+        let groups = JSON.parse(localStorage.getItem('lc_groups_native')) || [];
+        let clients = JSON.parse(localStorage.getItem('lc_clients_native')) || [];
+        let obligations = JSON.parse(localStorage.getItem('lc_obligations_native')) || [];
+        let isInitialCloudLoaded = false;
 
         let activeTab = 'menu';
         let hasPendingPayments = false;
@@ -445,19 +455,21 @@
 
         async function loadFromFirebase() {
             try {
+                setSyncLabel("🔄 Cargando datos de Firebase...");
                 const res = await fetch(`${FIREBASE_URL}/data.json`);
                 if (res.ok) {
                     const remoteData = await res.json();
                     if (remoteData) {
-                        if (remoteData.groups) groups = remoteData.groups;
-                        if (remoteData.clients) {
+                        if (Array.isArray(remoteData.groups)) groups = remoteData.groups;
+                        if (Array.isArray(remoteData.clients)) {
                             clients = remoteData.clients.map(c => ({
                                 ...c,
                                 taxpayerType: normalizeTaxpayerType(c.taxpayerType)
                             }));
                         }
-                        if (remoteData.obligations) obligations = remoteData.obligations;
+                        if (Array.isArray(remoteData.obligations)) obligations = remoteData.obligations;
                     }
+                    isInitialCloudLoaded = true;
                 }
                 saveToLocalStorage();
                 renderAll();
@@ -477,6 +489,34 @@
             
             try {
                 setSyncLabel("🔄 Sincronizando...");
+                if (!isInitialCloudLoaded) {
+                    const checkRes = await fetch(`${FIREBASE_URL}/data.json`);
+                    if (checkRes.ok) {
+                        const remote = await checkRes.json();
+                        if (remote) {
+                            const localClientIds = new Set(clients.map(c => String(c.id)));
+                            const localObIds = new Set(obligations.map(o => String(o.id)));
+                            const localGroupIds = new Set(groups.map(g => String(g.id)));
+                            if (Array.isArray(remote.groups)) {
+                                remote.groups.forEach(rg => { if (!localGroupIds.has(String(rg.id))) groups.push(rg); });
+                            }
+                            if (Array.isArray(remote.clients)) {
+                                remote.clients.forEach(rc => {
+                                    if (!localClientIds.has(String(rc.id))) {
+                                        clients.push({ ...rc, taxpayerType: normalizeTaxpayerType(rc.taxpayerType) });
+                                    }
+                                });
+                            }
+                            if (Array.isArray(remote.obligations)) {
+                                remote.obligations.forEach(ro => { if (!localObIds.has(String(ro.id))) obligations.push(ro); });
+                            }
+                            saveToLocalStorage();
+                            renderAll();
+                        }
+                        isInitialCloudLoaded = true;
+                    }
+                }
+
                 await fetch(`${FIREBASE_URL}/data.json`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -493,6 +533,52 @@
             localStorage.setItem('lc_groups_native', JSON.stringify(groups));
             localStorage.setItem('lc_clients_native', JSON.stringify(clients));
             localStorage.setItem('lc_obligations_native', JSON.stringify(obligations));
+        }
+
+        function exportBackupJson() {
+            const payload = {
+                exportedAt: new Date().toISOString(),
+                groups,
+                clients,
+                obligations
+            };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Respaldo_Control_Tributario_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importBackupJson(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (!Array.isArray(parsed.clients) || !Array.isArray(parsed.obligations)) {
+                        alert("El archivo seleccionado no tiene un formato de respaldo válido.");
+                        return;
+                    }
+                    if (!confirm(`Se restaurarán ${parsed.clients.length} cliente(s) y ${parsed.obligations.length} obligación(es). ¿Continuar?`)) {
+                        return;
+                    }
+                    groups = Array.isArray(parsed.groups) ? parsed.groups : [];
+                    clients = parsed.clients.map(c => ({ ...c, taxpayerType: normalizeTaxpayerType(c.taxpayerType) }));
+                    obligations = parsed.obligations;
+                    isInitialCloudLoaded = true;
+                    await saveData();
+                    updateTaxOptions();
+                    alert("Respaldo restaurado y sincronizado correctamente.");
+                } catch (err) {
+                    alert("No se pudo leer el archivo JSON de respaldo.");
+                } finally {
+                    event.target.value = '';
+                }
+            };
+            reader.readAsText(file);
         }
 
         function formatDate(dateStr) {
@@ -768,6 +854,7 @@
 
             const finalRif = matchedClient ? (matchedClient.rif || rawRif || 'S/N') : (rawRif.trim() || 'S/N');
             const finalClientName = matchedClient ? matchedClient.name : rawClientName.trim();
+            const finalGroup = matchedClient ? (matchedClient.group || '') : '';
 
             const rawAmount = document.getElementById('ob-amount').value;
             const formattedAmount = cleanAndFormatAmountInput(rawAmount);
@@ -775,8 +862,10 @@
             if (editId) {
                 obligations = obligations.map(o => o.id == editId ? {
                     ...o,
+                    clientId: matchedClient ? matchedClient.id : (o.clientId || null),
                     rif: finalRif,
                     clientName: finalClientName,
+                    group: finalGroup,
                     category: document.getElementById('ob-category').value,
                     taxType: document.getElementById('ob-tax').value,
                     period: document.getElementById('ob-period').value,
@@ -787,8 +876,10 @@
             } else {
                 const newOb = {
                     id: Date.now(),
+                    clientId: matchedClient ? matchedClient.id : null,
                     rif: finalRif,
                     clientName: finalClientName,
+                    group: finalGroup,
                     category: document.getElementById('ob-category').value,
                     taxType: document.getElementById('ob-tax').value,
                     period: document.getElementById('ob-period').value,
@@ -867,14 +958,42 @@
         function saveClient(e) {
             e.preventDefault();
             const id = document.getElementById('client-edit-id').value;
-            const rif = document.getElementById('client-rif').value;
-            const name = document.getElementById('client-name').value;
+            const rif = document.getElementById('client-rif').value.trim();
+            const name = document.getElementById('client-name').value.trim();
             const taxpayerType = normalizeTaxpayerType(document.getElementById('client-taxpayer-type').value);
             const group = document.getElementById('client-group').value;
-            const phone = document.getElementById('client-phone').value;
+            const phone = document.getElementById('client-phone').value.trim();
 
             if (id) {
-                clients = clients.map(c => c.id == id ? { ...c, rif, name, taxpayerType, group, phone } : c);
+                const prevClient = clients.find(c => String(c.id) === String(id));
+                const prevRifClean = (prevClient?.rif || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                const prevNameNorm = normalizeSearchText(prevClient?.name || '');
+
+                clients = clients.map(c => String(c.id) === String(id)
+                    ? { ...c, rif, name, taxpayerType, group, phone }
+                    : c
+                );
+
+                // Propagar actualización de RIF, Razón Social y Grupo a todas las obligaciones vinculadas
+                obligations = obligations.map(o => {
+                    const obRifClean = (o.rif || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const obNameNorm = normalizeSearchText(o.clientName || '');
+                    const matchesClient =
+                        (o.clientId && String(o.clientId) === String(id)) ||
+                        (prevRifClean && obRifClean === prevRifClean) ||
+                        (prevNameNorm && obNameNorm === prevNameNorm);
+
+                    if (matchesClient) {
+                        return {
+                            ...o,
+                            clientId: prevClient ? prevClient.id : Number(id),
+                            rif: rif || o.rif,
+                            clientName: name || o.clientName,
+                            group: group
+                        };
+                    }
+                    return o;
+                });
             } else {
                 clients.push({ id: Date.now(), rif, name, taxpayerType, group, phone });
             }
@@ -911,6 +1030,49 @@
             document.getElementById('client-group').value = '';
             document.getElementById('client-phone').value = '';
             document.getElementById('client-form-title').innerText = 'Nuevo Cliente';
+        }
+
+        function renderClientsList() {
+            const cList = document.getElementById('clients-list');
+            const filterEl = document.getElementById('filter-client-group');
+            const countBadge = document.getElementById('directory-count-badge');
+            if (!cList) return;
+
+            const selectedGroup = filterEl ? filterEl.value : '';
+            const filteredClients = clients.filter(c => {
+                if (!selectedGroup) return true;
+                if (selectedGroup === '__SIN_GRUPO__') return !c.group;
+                return c.group === selectedGroup;
+            });
+
+            if (countBadge) {
+                countBadge.textContent = `${filteredClients.length} cliente(s)`;
+            }
+
+            if (filteredClients.length === 0) {
+                cList.innerHTML = `<div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 text-slate-400 text-xs italic">No hay clientes registrados para este grupo.</div>`;
+                return;
+            }
+
+            cList.innerHTML = filteredClients.map(c => {
+                const tType = normalizeTaxpayerType(c.taxpayerType);
+                const shortLabel = tType.startsWith("SPE") ? "SPE" : "SPNE";
+                return `
+                    <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex justify-between items-center gap-3 text-sm">
+                        <div>
+                            <div class="font-semibold text-white flex flex-wrap items-center gap-2">
+                                <span>${c.name}</span>
+                                <span class="text-[10px] bg-slate-950 text-slate-200 border border-slate-700 px-2 py-0.5 rounded-full font-medium">${shortLabel}</span>
+                            </div>
+                            <div class="text-slate-400 text-xs mt-0.5"><span class="font-mono text-slate-200">${c.rif}</span> · ${tType} · ${c.group || 'Sin grupo'}</div>
+                        </div>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button onclick="editClient(${c.id})" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded-xl text-xs font-medium transition">Editar</button>
+                            <button onclick="deleteClient(${c.id})" class="text-slate-400 hover:text-white px-2 py-1 rounded-xl text-xs font-medium transition">Borrar</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function groupObligationsByCategory(obsList) {
@@ -1522,32 +1684,21 @@
             const clientGroupEl = document.getElementById('client-group');
             if(clientGroupEl) clientGroupEl.innerHTML = groupOptions;
 
+            const filterClientGroupEl = document.getElementById('filter-client-group');
+            if (filterClientGroupEl) {
+                const prevFilter = filterClientGroupEl.value || '';
+                filterClientGroupEl.innerHTML =
+                    '<option value="">Todos los grupos</option>' +
+                    groups.map(g => `<option value="${g.name}">${g.name}</option>`).join('') +
+                    '<option value="__SIN_GRUPO__">Sin grupo</option>';
+                filterClientGroupEl.value = prevFilter;
+            }
+
             const queryGroupOptions = '<option value="">-- Seleccionar grupo --</option>' + groups.map(g => `<option value="${g.name}">${g.name}</option>`).join('');
             const queryGroupEl = document.getElementById('query-group');
             if(queryGroupEl) queryGroupEl.innerHTML = queryGroupOptions;
 
-            const cList = document.getElementById('clients-list');
-            if(cList) {
-                cList.innerHTML = clients.map(c => {
-                    const tType = normalizeTaxpayerType(c.taxpayerType);
-                    const shortLabel = tType.startsWith("SPE") ? "SPE" : "SPNE";
-                    return `
-                        <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex justify-between items-center gap-3 text-sm">
-                            <div>
-                                <div class="font-semibold text-white flex flex-wrap items-center gap-2">
-                                    <span>${c.name}</span>
-                                    <span class="text-[10px] bg-slate-950 text-slate-200 border border-slate-700 px-2 py-0.5 rounded-full font-medium">${shortLabel}</span>
-                                </div>
-                                <div class="text-slate-400 text-xs mt-0.5"><span class="font-mono text-slate-200">${c.rif}</span> · ${tType} · ${c.group || 'Sin grupo'}</div>
-                            </div>
-                            <div class="flex items-center gap-1.5 shrink-0">
-                                <button onclick="editClient(${c.id})" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded-xl text-xs font-medium transition">Editar</button>
-                                <button onclick="deleteClient(${c.id})" class="text-slate-400 hover:text-white px-2 py-1 rounded-xl text-xs font-medium transition">Borrar</button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
+            renderClientsList();
 
             const queryClientOptions = '<option value="">-- Seleccionar empresa --</option>' + clients.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
             const queryClientEl = document.getElementById('query-client');
